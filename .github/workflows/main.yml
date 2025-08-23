@@ -20,7 +20,7 @@ jobs:
           mkdir -p recordings
           now=$(date +"%Y-%m-%d_%H-%M")
           # rekam 1 jam 30 menit (5400 detik), dengan bitrate kecil biar <100MB
-          ffmpeg -y -i "https://i.klikhost.com:8502/stream" -t 5400 -b:a 64k "recordings/radio_$now.mp3"
+          ffmpeg -y -i "https://i.klikhost.com:8502/stream" -t 5400 -b:a 64k "recordings/VOT-Denpasar_$now.mp3"
 
       - name: Commit & push recording
         run: |
