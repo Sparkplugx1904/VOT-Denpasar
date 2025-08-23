@@ -4,6 +4,7 @@ on:
   schedule:
     # 17:00 WITA = 09:00 UTC
     - cron: "0 9 * * *"
+  workflow_dispatch:       # biar bisa tes manual via tombol
 
 jobs:
   record:
@@ -19,13 +20,13 @@ jobs:
         run: |
           mkdir -p recordings
           now=$(date +"%Y-%m-%d_%H-%M")
-          # rekam 1 jam 30 menit (5400 detik), dengan bitrate kecil biar <100MB
-          ffmpeg -y -i "https://i.klikhost.com:8502/stream" -t 5400 -b:a 64k "recordings/VOT-Denpasar_$now.mp3"
+          # rekam 1 jam 30 menit (5400 detik) dengan bitrate asli stream (copy)
+          ffmpeg -y -i "https://i.klikhost.com:8502/stream" -t 5400 -c:a copy "recordings/VOT-Denpasar_$now.mp3"
 
       - name: Commit & push recording
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git add recordings/
-          git commit -m "Add recording at $(date -u)"
+          git commit -m "Add recording at $(date -u)" || echo "No changes to commit"
           git push
