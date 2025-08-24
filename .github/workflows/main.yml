@@ -2,9 +2,8 @@ name: Record Radio Stream
 
 on:
   schedule:
-    # 17:00 WITA = 09:00 UTC
-    - cron: "0 9 * * *"
-  workflow_dispatch:       # biar bisa tes manual via tombol
+    - cron: "0 9 * * *"   # jalan jam 09:00 UTC = 17:00 WITA
+  workflow_dispatch:
 
 jobs:
   record:
@@ -13,20 +12,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-
-      - name: Record stream
+      - name: Record raw stream
         run: |
           mkdir -p recordings
           now=$(date +"%Y-%m-%d_%H-%M")
-          # rekam 1 jam 30 menit (5400 detik) dengan bitrate asli stream (copy)
-          ffmpeg -y -i "https://i.klikhost.com:8502/stream" -t 5400 -c:a copy "recordings/VOT-Denpasar_$now.mp3"
+          # ambil stream selama 5400 detik (1,5 jam)
+          timeout 5400 curl -L "https://i.klikhost.com:8502/stream" -o "recordings/VOT-Denpasar_$now.mp3"
 
       - name: Commit & push recording
         run: |
           git config --global user.email "madyapadma_trisma@yahoo.com"
           git config --global user.name "GitHub Actions"
           git add recordings/
-          git commit -m "Add recording at $(date -u)" || echo "No changes to commit"
+          git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
           git push
