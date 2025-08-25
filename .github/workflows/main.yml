@@ -12,12 +12,32 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Wait until stream is available
+        run: |
+          url="https://i.klikhost.com:8502/stream"
+          retries=60   # maksimal 10 menit (60 x 10 detik)
+          count=0
+          while [ $count -lt $retries ]; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+            if [ "$status" = "200" ]; then
+              echo "Stream is online (HTTP 200), starting recording..."
+              break
+            else
+              echo "Stream not ready (HTTP $status), retrying in 10s..."
+              sleep 10
+              count=$((count+1))
+            fi
+          done
+          if [ $count -eq $retries ]; then
+            echo "Stream never became ready after $((retries*10))s, exiting."
+            exit 1
+          fi
+
       - name: Record raw stream
         run: |
           mkdir -p recordings
           now=$(date +"%Y-%m-%d_%H-%M")
-          # ambil stream selama 5400 detik (1,5 jam)
-          timeout 5400 curl -L "https://i.klikhost.com:8502/stream" -o "recordings/VOT-Denpasar_$now.mp3"
+          ffmpeg -i "https://i.klikhost.com:8502/stream" -c copy -t 5400 "recordings/VOT-Denpasar_$now.mp3"
 
       - name: Commit & push recording
         run: |
