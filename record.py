@@ -68,7 +68,7 @@ def run_ffmpeg(url):
 
 if __name__ == "__main__":
     stream_url = "https://i.klikhost.com:8502/stream"
-    #wait_for_stream(stream_url)
-    #wait_until_17_wita()
+    wait_for_stream(stream_url)
+    wait_until_17_wita()
     run_ffmpeg(stream_url)
     print("[ DONE ] Semua tugas selesai.")
