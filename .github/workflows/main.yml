@@ -1,46 +1,32 @@
-name: Record Radio Stream
+name: Record Stream and Push
 
 on:
+  workflow_dispatch:   # bisa dijalankan manual
   schedule:
-    - cron: "0 9 * * *"   # jalan jam 09:00 UTC = 17:00 WITA
-  workflow_dispatch:
+    - cron: "50 8 * * *"   # contoh: trigger tiap hari jam 16:50 UTC (~17:00 WITA)
 
 jobs:
   record:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Wait until stream is available
+      - name: Install dependencies
         run: |
-          url="https://i.klikhost.com:8502/stream"
-          retries=60   # maksimal 10 menit (60 x 10 detik)
-          count=0
-          while [ $count -lt $retries ]; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
-            if [ "$status" = "200" ]; then
-              echo "Stream is online (HTTP 200), starting recording..."
-              break
-            else
-              echo "Stream not ready (HTTP $status), retrying in 10s..."
-              sleep 10
-              count=$((count+1))
-            fi
-          done
-          if [ $count -eq $retries ]; then
-            echo "Stream never became ready after $((retries*10))s, exiting."
-            exit 1
-          fi
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
 
-      - name: Record raw stream
+      - name: Run recording script
         run: |
-          mkdir -p recordings
-          now=$(date +"%Y-%m-%d_%H-%M")
-          ffmpeg -i "https://i.klikhost.com:8502/stream" -c copy -t 5400 "recordings/VOT-Denpasar_$now.mp3"
+          python record.py
 
       - name: Commit & push recording
         run: |
