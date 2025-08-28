@@ -40,8 +40,8 @@ jobs:
           echo "[DEBUG] Remote sebelum diubah:"
           git remote -v
       
-          echo "[DEBUG] Panjang token: ${#MY_TOKEN}"
-          echo "[DEBUG] Awal token: ${MY_TOKEN:0:4}..."
+          # Hash token biar ga keliatan plaintext
+          echo -n "${MY_TOKEN}" | sha256sum | awk '{print "[DEBUG] Token (SHA-256): " $1}'
       
           git add recordings/
           git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
@@ -60,4 +60,5 @@ jobs:
       
           echo "[DEBUG] Push ke main..."
           git push origin main || echo "[ERROR] Push gagal"
+
 
