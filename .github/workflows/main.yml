@@ -35,4 +35,5 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add recordings/
           git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
-          git push
+          git remote set-url origin https://x-access-token:${{ secrets.MY_TOKEN }}@github.com/Sparkplugx1904/VOT-Denpasar.git
+          git push origin main
