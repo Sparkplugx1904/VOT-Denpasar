@@ -47,7 +47,7 @@ jobs:
           git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
       
           echo "[DEBUG] Set remote dengan token..."
-          git remote set-url origin https://Sparkplugx1904:${MY_TOKEN}@github.com/Sparkplugx1904/VOT-Denpasar.git
+          git remote set-url origin https://x-access-token:${MY_TOKEN}@github.com/Sparkplugx1904/VOT-Denpasar.git
       
           echo "[DEBUG] Remote setelah diubah:"
           git remote -v
