@@ -38,9 +38,9 @@ jobs:
 
           # Print the URL with token (untuk debug sekali ini saja)
           echo "Remote URL with token:"
-          echo "https://x-access-token:${{ secrets.MY_TOKEN }}@github.com/Sparkplugx1904/VOT-Denpasar.git"
+          echo "https://x-access-token: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@github.com/Sparkplugx1904/VOT-Denpasar.git"
 
           # Set remote and push
-          git remote set-url origin https://x-access-token:${{ secrets.MY_TOKEN }}@github.com/Sparkplugx1904/VOT-Denpasar.git
+          git remote set-url origin https://x-access-token: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@github.com/Sparkplugx1904/VOT-Denpasar.git
           git push origin main
 
