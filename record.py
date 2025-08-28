@@ -41,7 +41,7 @@ def run_ffmpeg(url):
     filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
     os.makedirs("recordings", exist_ok=True)
 
-    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "60", filename]
+    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "10", filename]
     print(f"[ RUN ] Mulai rekaman ke {filename}")
     process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
