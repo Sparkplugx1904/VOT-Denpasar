@@ -33,34 +33,31 @@ jobs:
         env:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          set -x  # debug: echo semua perintah yang jalan
-      
+          set -x
           git config --global user.email "madyapadma_trisma@yahoo.com"
           git config --global user.name "GitHub Actions"
       
-          # cek remote awal
           echo "[DEBUG] Remote sebelum diubah:"
           git remote -v
       
-          # cek isi env token (sebagian aja biar ga bocor)
           echo "[DEBUG] Panjang token: ${#MY_TOKEN}"
           echo "[DEBUG] Awal token: ${MY_TOKEN:0:4}..."
       
           git add recordings/
           git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
       
-          # set remote pakai token
           echo "[DEBUG] Set remote dengan token..."
           git remote set-url origin https://Sparkplugx1904:${MY_TOKEN}@github.com/Sparkplugx1904/VOT-Denpasar.git
       
-          # cek remote lagi setelah diubah
           echo "[DEBUG] Remote setelah diubah:"
           git remote -v
       
-          # coba tes akses (tanpa push dulu)
+          echo "[DEBUG] Hapus credential extraheader bawaan checkout..."
+          git config --local --unset-all http.https://github.com/.extraheader || true
+      
           echo "[DEBUG] Coba git ls-remote..."
           git ls-remote origin || echo "[ERROR] ls-remote gagal"
       
-          # baru push
           echo "[DEBUG] Push ke main..."
           git push origin main || echo "[ERROR] Push gagal"
+
