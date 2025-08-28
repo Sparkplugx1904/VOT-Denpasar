@@ -41,7 +41,7 @@ def run_ffmpeg(url):
     filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
     os.makedirs("recordings", exist_ok=True)
 
-    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "10", filename]
+    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "5400", filename]
     print(f"[ RUN ] Mulai rekaman ke {filename}")
     process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -53,22 +53,22 @@ def run_ffmpeg(url):
         sys.stdout.write(f"\r[ TIMER ] {h:02}:{m:02}:{s:02}")
         sys.stdout.flush()
 
-        # if now.hour == 18 and now.minute >= 30:
-        #     print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
-        #     process.send_signal(signal.SIGINT)
-        #     try:
-        #         process.wait(timeout=10)
-        #     except subprocess.TimeoutExpired:
-        #         process.kill()
-        #     break
+        if now.hour == 18 and now.minute >= 30:
+            print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+            process.send_signal(signal.SIGINT)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+            break
         if process.poll() is not None:
             print("\n[ DONE ] Rekaman selesai lebih cepat.")
             break
         time.sleep(1)
 
 if __name__ == "__main__":
-    stream_url = "https://i.klikhost.com:8074/stream"
-    #wait_for_stream(stream_url)
-    #wait_until_17_wita()
+    stream_url = "https://i.klikhost.com:8502/stream"
+    wait_for_stream(stream_url)
+    wait_until_17_wita()
     run_ffmpeg(stream_url)
     print("[ DONE ] Semua tugas selesai.")
