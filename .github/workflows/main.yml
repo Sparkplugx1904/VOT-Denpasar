@@ -29,36 +29,17 @@ jobs:
         run: |
           python record.py
 
-      - name: Commit & push recording (debug super)
+      - name: Commit & push recording
         env:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          set -x
           git config --global user.email "madyapadma_trisma@yahoo.com"
           git config --global user.name "GitHub Actions"
-      
-          echo "[DEBUG] Remote sebelum diubah:"
-          git remote -v
-      
-          # Hash token biar ga keliatan plaintext
-          echo -n "${MY_TOKEN}" | sha256sum | awk '{print "[DEBUG] Token (SHA-256): " $1}'
-      
+
           git add recordings/
           git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
-      
-          echo "[DEBUG] Set remote dengan token..."
+
           git remote set-url origin https://x-access-token:${MY_TOKEN}@github.com/Sparkplugx1904/VOT-Denpasar.git
-      
-          echo "[DEBUG] Remote setelah diubah:"
-          git remote -v
-      
-          echo "[DEBUG] Hapus credential extraheader bawaan checkout..."
           git config --local --unset-all http.https://github.com/.extraheader || true
-      
-          echo "[DEBUG] Coba git ls-remote..."
-          git ls-remote origin || echo "[ERROR] ls-remote gagal"
-      
-          echo "[DEBUG] Push ke main..."
+          
           git push origin main || echo "[ERROR] Push gagal"
-
-
