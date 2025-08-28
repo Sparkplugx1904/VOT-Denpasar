@@ -53,14 +53,14 @@ def run_ffmpeg(url):
         sys.stdout.write(f"\r[ TIMER ] {h:02}:{m:02}:{s:02}")
         sys.stdout.flush()
 
-        if now.hour == 18 and now.minute >= 30:
-            print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
-            process.send_signal(signal.SIGINT)
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            break
+        # if now.hour == 18 and now.minute >= 30:
+        #     print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+        #     process.send_signal(signal.SIGINT)
+        #     try:
+        #         process.wait(timeout=10)
+        #     except subprocess.TimeoutExpired:
+        #         process.kill()
+        #     break
         if process.poll() is not None:
             print("\n[ DONE ] Rekaman selesai lebih cepat.")
             break
