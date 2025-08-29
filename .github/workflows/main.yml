@@ -27,7 +27,7 @@ jobs:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
-          python recorder.py
+          python record.py
 
 
       # - name: Commit & push recording
