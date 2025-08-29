@@ -3,117 +3,129 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daftar Rekaman VOT Denpasar</title>
+  <title>Pustaka Rekaman VOT Denpasar</title>
+  <link rel="icon" type="image/png" href="https://madyapadma-online.com/images/icon/madyapadma.png">
+  
+  <!-- Bootstrap & Font -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap" rel="stylesheet">
+  
   <style>
-    /* ===== GTK/Adwaita-inspired look ===== */
-    :root{
-      --bg: #edeef0;
-      --fg: #2e3436;
-      --subtle: #cfd3d7;
-      --accent: #3584e4; /* GNOME blue */
-      --card: #fff;
-      --shadow: 0 2px 6px rgba(0,0,0,.08);
-      --radius: 14px;
-      --font: system-ui, -apple-system, Segoe UI, Cantarell, Ubuntu, Roboto, Noto Sans, Arial, sans-serif;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #f5f5f5;
     }
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg:#21252b; --fg:#e6e6e6; --subtle:#3a3f46; --accent:#78aeed; --card:#2a2f36; --shadow:none;
-      }
+    /* Header */
+    #sp-header {
+      background-color: #444;
+      padding: 10px 0;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; background:var(--bg); color:var(--fg); font-family:var(--font);
+    #sp-header .logo img {
+      height: 50px;
     }
-
-    /* Window + headerbar */
-    .window{max-width: 920px; margin:32px auto; background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; border:1px solid var(--subtle)}
-    .headerbar{display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--subtle); background:linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0));}
-    .win-controls{display:flex; gap:8px; margin-right:8px}
-    .dot{width:12px;height:12px;border-radius:50%}
-    .dot.close{background:#e34f4f}
-    .dot.min{background:#f4bf4f}
-    .dot.max{background:#5cc85c}
-    .title{font-weight:600}
+    .navbar-nav > li > a {
+      color: #fff !important;
+      font-weight: 600;
+    }
+    .navbar-nav > li > a:hover {
+      color: #00b9d8 !important;
+    }
 
     /* Toolbar */
-    .toolbar{display:flex; gap:12px; padding:10px 14px; border-bottom:1px solid var(--subtle); background:transparent}
-    .search{flex:1; display:flex; align-items:center; gap:8px; border:1px solid var(--subtle); border-radius:10px; padding:8px 10px; background:var(--bg)}
-    .search input{flex:1; border:none; outline:none; background:transparent; color:var(--fg); font-size:14px}
-    .btn{border:1px solid var(--subtle); background:var(--bg); color:var(--fg); padding:8px 12px; border-radius:10px; cursor:pointer}
-    .btn.primary{border-color:transparent; background:var(--accent); color:#fff}
+    .toolbar {
+      margin: 20px 0;
+    }
+    .search-box {
+      display: flex;
+      gap: 8px;
+    }
+    .search-box input {
+      flex: 1;
+    }
 
     /* List */
-    .list{padding:4px 0}
-    .row{display:grid; grid-template-columns: 42px 1fr auto; gap:12px; align-items:center; padding:12px 16px; border-bottom:1px solid var(--subtle)}
-    .row:hover{background:rgba(0,0,0,.03)}
-    .row:last-child{border-bottom:none}
-    .badge{font: 11px var(--mono); color:var(--fg); background:var(--bg); border:1px solid var(--subtle); padding:4px 8px; border-radius:999px}
-    .icon{width:28px; height:28px; border-radius:6px; background:var(--accent); display:grid; place-items:center; color:#fff; font-weight:700}
-    .meta{display:flex; flex-direction:column}
-    .meta .title{font-weight:600}
-    .meta .sub{opacity:.8; font-size:12px}
+    .list-group-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .list-meta {
+      flex: 1;
+      margin-left: 12px;
+    }
+    .list-meta .title {
+      font-weight: 600;
+    }
+    .badge-id {
+      background: #00b9d8;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
 
-    /* Player panel */
-    .player{padding:14px; border-top:1px solid var(--subtle); background:linear-gradient(180deg, transparent, rgba(0,0,0,.03))}
-    audio{width:100%; margin-top:6px}
-
-    .empty{padding:24px; text-align:center; opacity:.8}
+    /* Player */
+    .player {
+      /* margin-top: 20px; */ /* Hapus margin-top agar tidak ada gap */
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
-  <div class="window" role="application" aria-label="Daftar Rekaman VOT Denpasar">
-    <div class="headerbar">
-      <div class="win-controls" aria-hidden="true">
-        <div class="dot close"></div>
-        <div class="dot min"></div>
-        <div class="dot max"></div>
+
+  <!-- Header -->
+  <header id="sp-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3">
+          <a class="logo" href="/">
+            <img src="https://madyapadma-online.com/images/logo-madya-padma.png" alt="Madyapadma Journalistic Park">
+          </a>
+        </div>
       </div>
-      <div class="title">Pustaka Rekaman – VOT Denpasar</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="container">
+    <div class="toolbar row">
+      <div class="col-sm-8">
+        <div class="input-group search-box">
+          <span class="input-group-addon"><i class="fa fa-search"></i></span>
+          <input id="q" type="text" class="form-control" placeholder="Cari tanggal atau ID… (mis. 29-08-25)">
+        </div>
+      </div>
+      <div class="col-sm-4 text-right">
+        <button class="btn btn-default" id="sortBtn">Urut: Terbaru</button>
+        <button class="btn btn-primary" id="refreshBtn">Muat Ulang</button>
+      </div>
     </div>
 
-    <div class="toolbar">
-      <div class="search" role="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-        <input id="q" placeholder="Cari tanggal atau ID… (mis. 29-08-25)" aria-label="Cari rekaman" />
-      </div>
-      <button class="btn" id="sortBtn" aria-pressed="true" title="Urut terbaru dulu">Urut: Terbaru</button>
-      <button class="btn" id="refreshBtn" title="Muat ulang daftar">Muat Ulang</button>
-    </div>
+    <div id="list" class="list-group"></div>
 
-    <div id="list" class="list" role="list"></div>
-
-    <div class="player" id="player" hidden>
-      <div class="meta">
-        <div class="title" id="nowTitle">—</div>
-        <div class="sub" id="nowSub">Memuat pemutar…</div>
-      </div>
-      <audio id="audio" controls preload="none"></audio>
-    </div>
   </div>
 
+  <!-- Scripts -->
   <script>
-    // Helper: ambil IDENTIFIER dari URL archive.org/details/<IDENTIFIER>
     function getIdentifierFromDetailsUrl(url){
       try{
         const u = new URL(url);
         const parts = u.pathname.split('/').filter(Boolean);
         const idx = parts.indexOf('details');
         if(idx !== -1 && parts[idx+1]) return parts[idx+1];
-      }catch(e){/* noop */}
+      }catch(e){}
       return null;
     }
 
-    // Ambil file MP3 dari metadata archive.org
     async function resolveMp3Url(identifier){
-      // Metadata API: https://archive.org/metadata/<identifier>
       const metaUrl = `https://archive.org/metadata/${identifier}`;
       const res = await fetch(metaUrl);
       if(!res.ok) throw new Error('Gagal ambil metadata');
       const meta = await res.json();
       const files = meta.files || [];
-      // Cari format MP3 yang umum
       const candidate = files.find(f => (f.format||'').toLowerCase().includes('mp3'))
                       || files.find(f => (f.name||'').toLowerCase().endsWith('.mp3'));
       if(!candidate) return null;
@@ -122,13 +134,24 @@
 
     const state = { data: [], sortDesc: true };
     const listEl = document.getElementById('list');
-    const audioEl = document.getElementById('audio');
-    const playerEl = document.getElementById('player');
-    const nowTitle = document.getElementById('nowTitle');
-    const nowSub = document.getElementById('nowSub');
+
+    // Buat playerEl secara dinamis
+    const playerEl = document.createElement('div');
+    playerEl.className = 'player';
+    playerEl.id = 'player';
+    playerEl.hidden = true;
+    playerEl.innerHTML = `
+      <h4 id="nowTitle">—</h4>
+      <p id="nowSub">Memuat pemutar…</p>
+      <audio id="audio" controls preload="none" style="width:100%"></audio>
+    `;
+    // Ambil referensi elemen dalam player
+    const audioEl = playerEl.querySelector('#audio');
+    const nowTitle = playerEl.querySelector('#nowTitle');
+    const nowSub = playerEl.querySelector('#nowSub');
 
     async function loadJson(){
-      const res = await fetch('recording.json', { cache: 'no-store' });
+      const res = await fetch('https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/refs/heads/main/recording.json', { cache: 'no-store' });
       if(!res.ok) throw new Error('Tidak dapat memuat recording.json');
       const json = await res.json();
       state.data = Array.isArray(json) ? json.slice() : [];
@@ -138,46 +161,42 @@
     function render(){
       const q = document.getElementById('q').value.trim().toLowerCase();
       let items = state.data.slice();
-      // Sort berdasarkan urutan tanggal di file (asumsikan sudah newest-first),
-      // tapi kalau user toggle, balikkan.
       if(!state.sortDesc) items.reverse();
       if(q){
         items = items.filter(it => (it.tanggal||'').toLowerCase().includes(q) || (it.url||'').toLowerCase().includes(q));
       }
 
       listEl.innerHTML = '';
+      // Hapus player dari DOM setiap render
+      if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+      playerEl.hidden = true;
+
       if(items.length === 0){
-        listEl.innerHTML = `<div class="empty">Tidak ada rekaman atau tidak cocok dengan pencarian.</div>`;
+        listEl.innerHTML = `<div class="list-group-item text-center">Tidak ada rekaman atau tidak cocok dengan pencarian.</div>`;
         return;
       }
 
       for(const it of items){
         const id = getIdentifierFromDetailsUrl(it.url);
         const row = document.createElement('div');
-        row.className = 'row';
-        row.setAttribute('role','listitem');
-
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        icon.textContent = '♪';
+        row.className = 'list-group-item';
 
         const meta = document.createElement('div');
-        meta.className = 'meta';
-        const title = document.createElement('div');
-        title.className = 'title';
-        title.textContent = `VOT-Denpasar ${it.tanggal}`;
-        const sub = document.createElement('div');
-        sub.className = 'sub';
-        sub.innerHTML = id ? `<code class="badge">${id}</code> · <a href="${it.url}" target="_blank">Buka di Archive.org</a>` : `<a href="${it.url}" target="_blank">Buka di Archive.org</a>`;
-        meta.appendChild(title); meta.appendChild(sub);
+        meta.className = 'list-meta';
+        meta.innerHTML = `<div class="title">vot-denpasar-${it.tanggal}</div>`+
+                         `<div><span class="badge-id">${id || ''}</span> <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
 
         const playBtn = document.createElement('button');
-        playBtn.className = 'btn primary';
+        playBtn.className = 'btn btn-success';
         playBtn.textContent = 'Putar';
         playBtn.onclick = async () => {
-          nowTitle.textContent = `VOT-Denpasar`;
-          nowSub.textContent = id ? id : '—';
+          // Hapus player dari DOM jika ada
+          if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+          // Sisipkan player sebelum baris yang diputar
+          row.parentNode.insertBefore(playerEl, row);
           playerEl.hidden = false;
+          nowTitle.textContent = `vot-denpasar-${it.tanggal}`; // Format sesuai permintaan
+          nowSub.textContent = id ? id : '—';
           audioEl.removeAttribute('src');
           audioEl.load();
           try{
@@ -188,20 +207,18 @@
             }
             audioEl.src = mp3;
             audioEl.play().catch(()=>{});
-            nowSub.innerHTML = `<span>Memainkan: </span><code class="badge">${mp3.split('/').pop()}</code>`;
+            nowSub.innerHTML = `<span>Memainkan: </span><code>${mp3.split('/').pop()}</code>`;
           }catch(err){
             nowSub.textContent = 'Gagal memuat audio: ' + err.message;
           }
         };
 
-        row.appendChild(icon);
         row.appendChild(meta);
         row.appendChild(playBtn);
         listEl.appendChild(row);
       }
     }
 
-    // Events
     document.getElementById('q').addEventListener('input', render);
     document.getElementById('sortBtn').addEventListener('click', () => {
       state.sortDesc = !state.sortDesc;
@@ -210,11 +227,9 @@
     });
     document.getElementById('refreshBtn').addEventListener('click', () => loadJson());
 
-    // Init
     loadJson().catch(err => {
-      listEl.innerHTML = `<div class="empty">${err.message}</div>`;
+      listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
     });
   </script>
 </body>
-
 </html>
