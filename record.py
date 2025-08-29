@@ -5,8 +5,8 @@ import datetime
 import signal
 import sys
 import os
+import json
 from internetarchive import upload  # library untuk upload ke archive.org
-import os
 
 # Zona waktu WITA (UTC+8)
 WITA_OFFSET = datetime.timedelta(hours=8)
@@ -17,6 +17,8 @@ PASSWORD = os.environ.get("MY_PASS")
 if not EMAIL or not PASSWORD:
     print("[ERROR] GitHub secrets MY_ACC atau MY_PASS belum diset!")
     sys.exit(1)
+
+RECORDINGS_JSON = "recording.json"
 
 def now_wita():
     return datetime.datetime.utcnow() + WITA_OFFSET
@@ -76,7 +78,9 @@ def run_ffmpeg(url):
         time.sleep(1)
 
     print(f"\n[ DONE ] Rekaman selesai: {filename}")
-    upload_to_archive(filename)
+    archive_url = upload_to_archive(filename)
+    if archive_url:
+        update_recording_json(date_str, archive_url)
 
 def upload_to_archive(file_path):
     print(f"[ UPLOAD ] Mulai upload {file_path} ke archive.org...")
@@ -92,13 +96,40 @@ def upload_to_archive(file_path):
                access_key=EMAIL,
                secret_key=PASSWORD,
                verbose=True)
-        print("[ DONE ] Upload berhasil ke archive.org")
+        archive_url = f"https://archive.org/details/{item_identifier}"
+        print(f"[ DONE ] Upload berhasil: {archive_url}")
+        return archive_url
     except Exception as e:
         print(f"[ ERROR ] Upload gagal: {e}")
+        return None
+
+def update_recording_json(date_str, url):
+    data = []
+    # baca file json lama jika ada
+    if os.path.exists(RECORDINGS_JSON):
+        try:
+            with open(RECORDINGS_JSON, "r") as f:
+                data = json.load(f)
+        except Exception as e:
+            print(f"[WARN] Gagal membaca {RECORDINGS_JSON}: {e}")
+
+    # tambahkan entry baru
+    data.append({
+        "tanggal": date_str,
+        "url": url
+    })
+
+    # simpan kembali
+    try:
+        with open(RECORDINGS_JSON, "w") as f:
+            json.dump(data, f, indent=4)
+        print(f"[ JSON ] recording.json diperbarui, total {len(data)} entry.")
+    except Exception as e:
+        print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
     stream_url = "https://i.klikhost.com:8502/stream"
-    wait_for_stream(stream_url)
-    wait_until_17_wita()
+    # wait_for_stream(stream_url)
+    # wait_until_17_wita()
     run_ffmpeg(stream_url)
     print("[ DONE ] Semua tugas selesai.")
