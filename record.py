@@ -52,7 +52,7 @@ def run_ffmpeg(url):
     filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
     os.makedirs("recordings", exist_ok=True)
 
-    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "10", filename]
+    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "5400", filename]
     print(f"[ RUN ] Mulai rekaman ke {filename}")
     process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -128,8 +128,8 @@ def update_recording_json(date_str, url):
         print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
-    stream_url = "https://i.klikhost.com:8074/stream"
-    # wait_for_stream(stream_url)
-    # wait_until_17_wita()
+    stream_url = "https://i.klikhost.com:8502/stream"
+    wait_for_stream(stream_url)
+    wait_until_17_wita()
     run_ffmpeg(stream_url)
     print("[ DONE ] Semua tugas selesai.")
