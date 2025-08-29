@@ -3,7 +3,7 @@ name: Record Stream and Push
 on:
   workflow_dispatch:
   schedule:
-    - cron: "50 8 * * *"
+    - cron: "50 8 * * *"   # contoh: tiap hari jam 16:50 UTC (~17:00 WITA)
 
 jobs:
   record:
@@ -22,25 +22,14 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
       - name: Run recorder
         env:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
           python record.py
-
-
-      # - name: Commit & push recording
-      #   env:
-      #     MY_TOKEN: ${{ secrets.MY_TOKEN }}
-      #   run: |
-      #     git config --global user.email "madyapadma_trisma@yahoo.com"
-      #     git config --global user.name "GitHub Actions"
-
-      #     git add recordings/
-      #     git commit -m "Add raw recording at $(date -u)" || echo "No changes to commit"
-
-      #     git remote set-url origin https://x-access-token:${MY_TOKEN}@github.com/Sparkplugx1904/VOT-Denpasar.git
-      #     git config --local --unset-all http.https://github.com/.extraheader || true
-          
-      #     git push origin main || echo "[ERROR] Push gagal"
