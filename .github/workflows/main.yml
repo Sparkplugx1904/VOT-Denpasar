@@ -1,9 +1,9 @@
 name: Record Stream and Push
 
 on:
-  workflow_dispatch:   # bisa dijalankan manual
+  workflow_dispatch:
   schedule:
-    - cron: "50 8 * * *"   # contoh: trigger tiap hari jam 16:50 UTC (~17:00 WITA)
+    - cron: "50 8 * * *"
 
 jobs:
   record:
@@ -16,18 +16,19 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
-          mkdir -p recordings
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
           pip install -r requirements.txt
 
-      - name: Run recording script
+      - name: Run recorder
+        env:
+          MY_ACC: ${{ secrets.MY_ACC }}
+          MY_PASS: ${{ secrets.MY_PASS }}
         run: |
-          python record.py
+          python recorder.py
+
 
       # - name: Commit & push recording
       #   env:
