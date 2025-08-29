@@ -5,9 +5,18 @@ import datetime
 import signal
 import sys
 import os
+from internetarchive import upload  # library untuk upload ke archive.org
+import os
 
 # Zona waktu WITA (UTC+8)
 WITA_OFFSET = datetime.timedelta(hours=8)
+
+# Ambil email dan password dari environment variable (GitHub Secrets)
+EMAIL = os.environ.get("MY_ACC")
+PASSWORD = os.environ.get("MY_PASS")
+if not EMAIL or not PASSWORD:
+    print("[ERROR] GitHub secrets MY_ACC atau MY_PASS belum diset!")
+    sys.exit(1)
 
 def now_wita():
     return datetime.datetime.utcnow() + WITA_OFFSET
@@ -35,30 +44,6 @@ def wait_until_17_wita():
             sisa = ((17 - now.hour) * 3600) - (now.minute * 60 + now.second)
             print(f"[ ... ] Tunggu hingga 17.00 WITA ({sisa//60} menit lagi)")
             time.sleep(60)
-
-def split_file_by_size(input_file, max_size=90*1024*1024, delete_original=True):
-    base, ext = os.path.splitext(input_file)
-    output_pattern = base + "_Part_%03d" + ext  # ex: VOT-Denpasar_28-08-25_Part_001.mp3
-
-    print(f"\n[SPLIT] Memotong {input_file} menjadi bagian <= {max_size//1024//1024}MB...")
-    cmd = [
-        "ffmpeg", "-i", input_file,
-        "-f", "segment",
-        "-segment_time", "3600",        # fallback: potong per 1 jam
-        "-fs", str(max_size),           # ukuran maksimum per file
-        "-c", "copy",
-        output_pattern
-    ]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    if delete_original:
-        try:
-            os.remove(input_file)
-            print(f"[CLEAN] Hapus file asli {input_file}")
-        except Exception as e:
-            print(f"[WARN] Gagal hapus file asli: {e}")
-
-    print("[DONE] File sudah dipotong menjadi part-part kecil.")
 
 def run_ffmpeg(url):
     date_str = now_wita().strftime("%d-%m-%y")
@@ -90,8 +75,26 @@ def run_ffmpeg(url):
             break
         time.sleep(1)
 
-    # setelah selesai, pecah jadi beberapa file kecil
-    split_file_by_size(filename)
+    print(f"\n[ DONE ] Rekaman selesai: {filename}")
+    upload_to_archive(filename)
+
+def upload_to_archive(file_path):
+    print(f"[ UPLOAD ] Mulai upload {file_path} ke archive.org...")
+    try:
+        item_identifier = f"vot-denpasar-{now_wita().strftime('%Y%m%d-%H%M%S')}"
+        upload(item_identifier,
+               files=[file_path],
+               metadata={
+                   'mediatype': 'audio',
+                   'title': os.path.basename(file_path),
+                   'creator': 'VOT Radio Denpasar'
+               },
+               access_key=EMAIL,
+               secret_key=PASSWORD,
+               verbose=True)
+        print("[ DONE ] Upload berhasil ke archive.org")
+    except Exception as e:
+        print(f"[ ERROR ] Upload gagal: {e}")
 
 if __name__ == "__main__":
     stream_url = "https://i.klikhost.com:8502/stream"
