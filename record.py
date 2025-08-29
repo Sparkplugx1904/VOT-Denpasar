@@ -108,21 +108,21 @@ def update_recording_json(date_str, url):
     # baca file json lama jika ada
     if os.path.exists(RECORDINGS_JSON):
         try:
-            with open(RECORDINGS_JSON, "r") as f:
+            with open(RECORDINGS_JSON, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
             print(f"[WARN] Gagal membaca {RECORDINGS_JSON}: {e}")
 
-    # tambahkan entry baru
-    data.append({
+    # tambahkan entry baru DI ATAS (prepend)
+    data.insert(0, {
         "tanggal": date_str,
         "url": url
     })
 
     # simpan kembali
     try:
-        with open(RECORDINGS_JSON, "w") as f:
-            json.dump(data, f, indent=4)
+        with open(RECORDINGS_JSON, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
         print(f"[ JSON ] recording.json diperbarui, total {len(data)} entry.")
     except Exception as e:
         print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
