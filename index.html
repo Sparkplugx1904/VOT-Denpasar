@@ -165,7 +165,7 @@
         meta.className = 'meta';
         const title = document.createElement('div');
         title.className = 'title';
-        title.textContent = `Rekaman ${it.tanggal}`;
+        title.textContent = `VOT-Denpasar ${it.tanggal}`;
         const sub = document.createElement('div');
         sub.className = 'sub';
         sub.innerHTML = id ? `<code class="badge">${id}</code> · <a href="${it.url}" target="_blank">Buka di Archive.org</a>` : `<a href="${it.url}" target="_blank">Buka di Archive.org</a>`;
@@ -175,7 +175,7 @@
         playBtn.className = 'btn primary';
         playBtn.textContent = 'Putar';
         playBtn.onclick = async () => {
-          nowTitle.textContent = `Rekaman ${it.tanggal}`;
+          nowTitle.textContent = `VOT-Denpasar`;
           nowSub.textContent = id ? id : '—';
           playerEl.hidden = false;
           audioEl.removeAttribute('src');
@@ -216,4 +216,5 @@
     });
   </script>
 </body>
+
 </html>
