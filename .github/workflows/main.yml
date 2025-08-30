@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install FFmpeg via apt
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      # - name: Install FFmpeg via apt
+      #   run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Verify FFmpeg
         run: ffmpeg -version
