@@ -1,13 +1,19 @@
 <p align="center">
   <a href="https://madyapadma-online.com/" target="_blank">
-    <img src="https://madyapadma-online.com/images/logo-madya-padma.png" alt="VOT-Radio Denpasar" width="300"/>
+    <img src="https://www.madyapadma-pustaka.com/srcpublic/img/logo-1.png" alt="VOT-Radio Denpasar" width="300"/>
   </a>
 </p>
+
+
 
 <h1 align="center">📻 Voice of Trisma Radio Denpasar</h1>
 
 <p align="center">
-  Proyek ini bertujuan untuk mengarsipkan siaran radio <b>VOT-Radio Denpasar</b> secara otomatis.<br/>
+  "Voice of Trisma, the best online radio in Bali"
+</p>
+
+<p align="left">
+  Proyek ini bertujuan untuk mengarsipkan siaran radio <b>VOT-Radio Denpasar</b> secara otomatis. 
   Seluruh rekaman siaran dapat disimpan untuk referensi, dokumentasi, atau keperluan pendengar yang ingin mengakses siaran sebelumnya.
 </p>
 
