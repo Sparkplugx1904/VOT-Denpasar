@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MY_TOKEN }}   # pakai token custom, bukan default GITHUB_TOKEN
+          token: ${{ secrets.MY_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -21,27 +21,27 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Install ffmpeg (static build)
         run: |
-          curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
-            | tar -xJ --strip-components=1 -C /usr/local/bin
-          chmod +x /usr/local/bin/ffmpeg
+          curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+          tar -xJf ffmpeg.tar.xz
+          cd ffmpeg-*-amd64-static
+          sudo mv ffmpeg ffprobe /usr/local/bin/
+          chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
 
       - name: Run recorder
         env:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
-        run: |
-          python record.py
+        run: python record.py
 
       - name: Commit & Push JSON log
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add recording.json
-          git commit -m "Update log at $(date -u +"%Y-%m-%d %H:%M:%S UTC")" || echo "No changes to commit"
-          git push origin HEAD:main
-
+          git commit -m "Update log at $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || echo "No changes to commit"
+          git pull --rebase origin main || true
+          git push origin HEAD:main || git push -f origin main
