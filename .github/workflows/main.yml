@@ -25,7 +25,7 @@ jobs:
 
       - name: Install FFmpeg from local .deb
         run: |
-          sudo dpkg -i ffmpeg_7:4.4.2-0ubuntu0.22.04.1_amd64.deb || sudo apt-get -f install -y
+          sudo dpkg -i ffmpeg_7%3a4.4.2-0ubuntu0.22.04.1_amd64.deb || sudo apt-get -f install -y
 
       - name: Verify FFmpeg
         run: ffmpeg -version
