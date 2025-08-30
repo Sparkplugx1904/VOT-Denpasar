@@ -159,7 +159,7 @@ def update_recording_json(date_str, url):
         print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
-    stream_url = "https://i.klikhost.com:8502/stream"
+    stream_url = "https://i.klikhost.com:8074/stream"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url)
     print("\n[ DONE ] Semua tugas selesai.")
