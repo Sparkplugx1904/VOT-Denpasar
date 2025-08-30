@@ -14,8 +14,25 @@
 ---
 
 <p align="center">
-  <a href="https://sparkplugx1904.github.io/VOT-Denpasar/" target="_blank">
-    <img src="https://img.shields.io/badge/🌐%20Dengarkan%20Arsip%20Disini-blue?style=for-the-badge&logo=github&logoColor=white" alt="Listen Archive"/>
+<!-- Badge untuk Archive -->
+<a href="https://sparkplugx1904.github.io/VOT-Denpasar/" target="_blank">
+  <img src="https://img.shields.io/badge/Dengarkan%20Arsip%20Disini-blue?style=for-the-badge&logo=github&logoColor=white" alt="Listen Archive"/>
+</a>
+
+
+  <!-- Badge untuk SoundCloud user-293864053 -->
+  <a href="https://soundcloud.com/user-293864053" target="_blank">
+    <img src="https://img.shields.io/badge/Voice%20of%20Trisma-orange?style=for-the-badge&logo=soundcloud&logoColor=white&color=FF5500" alt="SoundCloud User"/>
+  </a>
+
+  <!-- Badge untuk SoundCloud madyapadma-kbrf -->
+  <a href="https://soundcloud.com/madyapadma-kbrf" target="_blank">
+    <img src="https://img.shields.io/badge/KBRF-orange?style=for-the-badge&logo=soundcloud&logoColor=white&color=FF5500" alt="SoundCloud KBRF"/>
+  </a>
+
+  <!-- Badge untuk SoundCloud madyapadma -->
+  <a href="https://soundcloud.com/madyapadma" target="_blank">
+    <img src="https://img.shields.io/badge/Madyapadma-orange?style=for-the-badge&logo=soundcloud&logoColor=white&color=FF5500" alt="SoundCloud Madyapadma"/>
   </a>
 </p>
 
