@@ -23,22 +23,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Setup cached FFmpeg
-        uses: actions/cache@v3
-        with:
-          path: /usr/local/bin/ffmpeg
-          key: ffmpeg-static-7
-      
-      - name: Download FFmpeg if not cached
-        run: |
-          if [ ! -f /usr/local/bin/ffmpeg ]; then
-            curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
-            tar -xJf ffmpeg.tar.xz
-            cd ffmpeg-*-amd64-static
-            sudo mv ffmpeg ffprobe /usr/local/bin/
-            chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
-          fi
+      - name: Install FFmpeg via apt
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
+      - name: Verify FFmpeg
+        run: ffmpeg -version
 
       - name: Run recorder
         env:
