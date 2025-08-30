@@ -36,30 +36,6 @@ def wait_until_17_wita():
             print(f"[ ... ] Tunggu hingga 17.00 WITA ({sisa//60} menit lagi)")
             time.sleep(60)
 
-def split_file_by_size(input_file, max_size=90*1024*1024, delete_original=True):
-    base, ext = os.path.splitext(input_file)
-    output_pattern = base + "_Part_%03d" + ext  # ex: VOT-Denpasar_28-08-25_Part_001.mp3
-
-    print(f"\n[SPLIT] Memotong {input_file} menjadi bagian <= {max_size//1024//1024}MB...")
-    cmd = [
-        "ffmpeg", "-i", input_file,
-        "-f", "segment",
-        "-segment_time", "3600",        # fallback: potong per 1 jam
-        "-fs", str(max_size),           # ukuran maksimum per file
-        "-c", "copy",
-        output_pattern
-    ]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    if delete_original:
-        try:
-            os.remove(input_file)
-            print(f"[CLEAN] Hapus file asli {input_file}")
-        except Exception as e:
-            print(f"[WARN] Gagal hapus file asli: {e}")
-
-    print("[DONE] File sudah dipotong menjadi part-part kecil.")
-
 def run_ffmpeg(url):
     date_str = now_wita().strftime("%d-%m-%y")
     filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
@@ -90,11 +66,8 @@ def run_ffmpeg(url):
             break
         time.sleep(1)
 
-    # setelah selesai, pecah jadi beberapa file kecil
-    split_file_by_size(filename)
-
 if __name__ == "__main__":
-    stream_url = "https://i.klikhost.com:8502/stream"
+    stream_url = "https://i.klikhost.com:8074/stream"
     wait_for_stream(stream_url)
     #wait_until_17_wita()
     run_ffmpeg(stream_url)
