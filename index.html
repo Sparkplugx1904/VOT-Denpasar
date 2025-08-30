@@ -151,9 +151,11 @@
     const nowSub = playerEl.querySelector('#nowSub');
 
     async function loadJson(){
+      // Ganti URL ke recording.json lokal jika perlu, atau biarkan seperti sekarang
       const res = await fetch('https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/refs/heads/main/recording.json', { cache: 'no-store' });
       if(!res.ok) throw new Error('Tidak dapat memuat recording.json');
       const json = await res.json();
+      // Pastikan json adalah array sesuai format yang diberikan
       state.data = Array.isArray(json) ? json.slice() : [];
       render();
     }
@@ -163,6 +165,7 @@
       let items = state.data.slice();
       if(!state.sortDesc) items.reverse();
       if(q){
+        // Filter berdasarkan tanggal atau url (ID)
         items = items.filter(it => (it.tanggal||'').toLowerCase().includes(q) || (it.url||'').toLowerCase().includes(q));
       }
 
@@ -233,4 +236,5 @@
   </script>
 </body>
 </html>
+
 
