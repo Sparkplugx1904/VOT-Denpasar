@@ -41,7 +41,7 @@ def run_ffmpeg(url):
     filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
     os.makedirs("recordings", exist_ok=True)
 
-    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "5400", filename]
+    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "7200", filename]
     print(f"[ RUN ] Mulai rekaman ke {filename}")
     
     # Jangan pakai DEVNULL, biar ffmpeg tetap hidup
