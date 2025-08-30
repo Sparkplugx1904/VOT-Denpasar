@@ -24,10 +24,11 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Install ffmpeg
+      - name: Install ffmpeg (static build)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
+            | tar -xJ --strip-components=1 -C /usr/local/bin
+          chmod +x /usr/local/bin/ffmpeg
 
       - name: Run recorder
         env:
