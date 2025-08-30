@@ -23,8 +23,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # - name: Install FFmpeg via apt
-      #   run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Cache FFmpeg
+        uses: actions/cache@v5
+        id: ffmpeg-cache
+        with:
+          path: /usr/bin/ffmpeg
+          key: ffmpeg-apt-${{ runner.os }}-v1
+
+      - name: Install FFmpeg if not cached
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
       - name: Verify FFmpeg
         run: ffmpeg -version
