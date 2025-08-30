@@ -115,6 +115,7 @@ def update_recording_json(date_str, url):
 
     # tambahkan entry baru DI ATAS (prepend)
     data.insert(0, {
+        "title": "vot-denpasar",
         "tanggal": date_str,
         "url": url
     })
