@@ -14,6 +14,7 @@ WITA_OFFSET = datetime.timedelta(hours=8)
 # Ambil email dan password dari environment variable (GitHub Secrets)
 EMAIL = os.environ.get("MY_ACC")
 PASSWORD = os.environ.get("MY_PASS")
+
 if not EMAIL or not PASSWORD:
     print("[ERROR] GitHub secrets MY_ACC atau MY_PASS belum diset!")
     sys.exit(1)
@@ -37,13 +38,58 @@ def wait_for_stream(url):
         time.sleep(15)
 
 def run_ffmpeg(url):
+    import subprocess
+    import sys
+    import os
+    import time
+    import requests
+    import signal
+
     date_str = now_wita().strftime("%d-%m-%y")
-    filename = f"recordings/VOT-Denpasar_{date_str}.mp3"
     os.makedirs("recordings", exist_ok=True)
 
-    cmd = ["ffmpeg", "-y", "-i", url, "-c", "copy", "-t", "7200", filename]
+    # Deteksi codec audio stream
+    probe_cmd = [
+        "ffprobe", "-v", "error", "-select_streams", "a:0",
+        "-show_entries", "stream=codec_name",
+        "-of", "default=nokey=1:noprint_wrappers=1", url
+    ]
+    codec = subprocess.check_output(probe_cmd).decode().strip()
+
+    ext_map = {"aac": "aac", "mp3": "mp3", "opus": "opus", "vorbis": "ogg"}
+    ext = ext_map.get(codec, "bin")  # default bin jika codec tidak dikenali
+
+    filename = f"recordings/VOT-Denpasar_{date_str}.{ext}"
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-reconnect", "1",
+        "-reconnect_streamed", "1",
+        "-reconnect_delay_max", "10",
+        "-i", url,
+        "-t", "7200",
+        "-c", "copy",
+        filename
+    ]
     print(f"[ RUN ] Mulai rekaman ke {filename}")
-    process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    # tampilkan log ffmpeg dengan overwrite (tanpa numpuk)
+    def log_ffmpeg(proc):
+        for line in proc.stderr:
+            msg = "[FFMPEG] " + line.strip()
+            sys.stdout.write("\r" + msg + " " * 10)
+            sys.stdout.flush()
+        print()  # newline setelah selesai
+
+    import threading
+    threading.Thread(target=log_ffmpeg, args=(process,), daemon=True).start()
 
     start_time = time.time()
     last_check = 0
@@ -51,18 +97,13 @@ def run_ffmpeg(url):
 
     while True:
         now = now_wita()
-        elapsed = int(time.time() - start_time)
-        h, m, s = elapsed // 3600, (elapsed % 3600) // 60, elapsed % 60
-        sys.stdout.write(f"\r[ TIMER ] {h:02}:{m:02}:{s:02}")
-        sys.stdout.flush()
 
-        # setiap 1 menit lakukan call HEAD ke stream URL
-        if time.time() - last_check >= 60:
+        # setiap 5 menit cek stream dengan HEAD
+        if time.time() - last_check >= 300:
             last_check = time.time()
             try:
                 resp = requests.head(url, timeout=10)
                 if resp.status_code == 200:
-                    print(f"\n[ OK ] Ping stream {url} → 200 OK")
                     fail_count = 0
                 else:
                     fail_count += 1
@@ -71,9 +112,8 @@ def run_ffmpeg(url):
                 fail_count += 1
                 print(f"\n[ ! ] Ping error: {e}, fail={fail_count}/15")
 
-            # stop ffmpeg jika gagal 15 kali beruntun
-            if fail_count >= 15:
-                print("\n[ CUT-OFF ] 15x gagal ping, hentikan rekaman...")
+            if fail_count >= 3:
+                print("\n[ CUT-OFF ] 3x gagal ping, hentikan rekaman...")
                 process.send_signal(signal.SIGINT)
                 try:
                     process.wait(timeout=10)
@@ -81,7 +121,7 @@ def run_ffmpeg(url):
                     process.kill()
                 break
 
-        # cut-off normal di 18:30 WITA
+        # cut-off manual waktu tertentu
         if now.hour == 18 and now.minute >= 30:
             print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
             process.send_signal(signal.SIGINT)
