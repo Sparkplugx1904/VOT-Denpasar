@@ -122,14 +122,14 @@ def run_ffmpeg(url):
                 break
 
         # cut-off manual waktu tertentu
-        if now.hour == 18 and now.minute >= 30:
-            print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
-            process.send_signal(signal.SIGINT)
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            break
+        # if now.hour == 18 and now.minute >= 30:
+        #     print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+        #     process.send_signal(signal.SIGINT)
+        #     try:
+        #         process.wait(timeout=10)
+        #     except subprocess.TimeoutExpired:
+        #         process.kill()
+        #     break
 
         if process.poll() is not None:
             print("\n[ DONE ] Rekaman selesai lebih cepat.")
@@ -189,7 +189,7 @@ def update_recording_json(date_str, url):
         print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
-    stream_url = "http://i.klikhost.com:8502/stream"
+    stream_url = "http://i.klikhost.com:8074/stream"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url)
     print("\n[ DONE ] Semua tugas selesai.")
