@@ -35,7 +35,7 @@ def wait_for_stream(url):
                 print(f"[ ! ] Status {resp.status_code}, coba lagi 30 detik...")
         except Exception as e:
             print(f"[ ! ] Error: {e}, coba lagi 30 detik...")
-        time.sleep(15)
+        time.sleep(5)
 
 def run_ffmpeg(url):
     import subprocess
