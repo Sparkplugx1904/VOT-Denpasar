@@ -12,66 +12,19 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap" rel="stylesheet">
   
   <style>
-    body {
-      font-family: 'Open Sans', sans-serif;
-      background-color: #f5f5f5;
-    }
-    /* Header */
-    #sp-header {
-      background-color: #444;
-      padding: 10px 0;
-    }
-    #sp-header .logo img {
-      height: 50px;
-    }
-    .navbar-nav > li > a {
-      color: #fff !important;
-      font-weight: 600;
-    }
-    .navbar-nav > li > a:hover {
-      color: #00b9d8 !important;
-    }
-
-    /* Toolbar */
-    .toolbar {
-      margin: 20px 0;
-    }
-    .search-box {
-      display: flex;
-      gap: 8px;
-    }
-    .search-box input {
-      flex: 1;
-    }
-
-    /* List */
-    .list-group-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .list-meta {
-      flex: 1;
-      margin-left: 12px;
-    }
-    .list-meta .title {
-      font-weight: 600;
-    }
-    .badge-id {
-      background: #00b9d8;
-      color: #fff;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-    }
-
-    /* Player */
-    .player {
-      /* margin-top: 20px; */ /* Hapus margin-top agar tidak ada gap */
-      padding: 15px;
-      background: #fff;
-      border: 1px solid #ddd;
-    }
+    body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; }
+    #sp-header { background-color: #444; padding: 10px 0; }
+    #sp-header .logo img { height: 50px; }
+    .navbar-nav > li > a { color: #fff !important; font-weight: 600; }
+    .navbar-nav > li > a:hover { color: #00b9d8 !important; }
+    .toolbar { margin: 20px 0; }
+    .search-box { display: flex; gap: 8px; }
+    .search-box input { flex: 1; }
+    .list-group-item { display: flex; align-items: center; justify-content: space-between; }
+    .list-meta { flex: 1; margin-left: 12px; }
+    .list-meta .title { font-weight: 600; }
+    .badge-id { background: #00b9d8; color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+    .player { padding: 15px; background: #fff; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -105,7 +58,6 @@
     </div>
 
     <div id="list" class="list-group"></div>
-
   </div>
 
   <!-- Scripts -->
@@ -132,10 +84,19 @@
       return `https://archive.org/download/${identifier}/${encodeURIComponent(candidate.name)}`;
     }
 
+    function formatDate(isoDate){
+      try{
+        const d = new Date(isoDate);
+        const dd = String(d.getUTCDate()).padStart(2,'0');
+        const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+        const yy = String(d.getUTCFullYear()).slice(-2);
+        return `${dd}-${mm}-${yy}`;
+      }catch(e){ return isoDate; }
+    }
+
     const state = { data: [], sortDesc: true };
     const listEl = document.getElementById('list');
 
-    // Buat playerEl secara dinamis
     const playerEl = document.createElement('div');
     playerEl.className = 'player';
     playerEl.id = 'player';
@@ -145,18 +106,24 @@
       <p id="nowSub">Memuat pemutar…</p>
       <audio id="audio" controls preload="none" style="width:100%"></audio>
     `;
-    // Ambil referensi elemen dalam player
     const audioEl = playerEl.querySelector('#audio');
     const nowTitle = playerEl.querySelector('#nowTitle');
     const nowSub = playerEl.querySelector('#nowSub');
 
     async function loadJson(){
-      // Ganti URL ke recording.json lokal jika perlu, atau biarkan seperti sekarang
-      const res = await fetch('https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/refs/heads/main/recording.json', { cache: 'no-store' });
-      if(!res.ok) throw new Error('Tidak dapat memuat recording.json');
+      const apiUrl = "https://archive.org/services/search/beta/page_production/?page_type=account_details&page_target=@16_i_gede_ananda_pradnyana&page_elements=[%22uploads%22]&hits_per_page=100&page=1&sort=publicdate:desc";
+      const res = await fetch(apiUrl, { cache: 'no-store' });
+      if(!res.ok) throw new Error('Tidak dapat memuat data dari Archive.org');
       const json = await res.json();
-      // Pastikan json adalah array sesuai format yang diberikan
-      state.data = Array.isArray(json) ? json.slice() : [];
+      const hits = json?.response?.body?.page_elements?.uploads?.hits?.hits || [];
+      state.data = hits.map(h => {
+        const id = h.fields.identifier;
+        return {
+          title: h.fields.title || id,
+          tanggal: formatDate(h.fields.publicdate),
+          url: `https://archive.org/details/${id}`
+        };
+      });
       render();
     }
 
@@ -165,12 +132,10 @@
       let items = state.data.slice();
       if(!state.sortDesc) items.reverse();
       if(q){
-        // Filter berdasarkan tanggal atau url (ID)
         items = items.filter(it => (it.tanggal||'').toLowerCase().includes(q) || (it.url||'').toLowerCase().includes(q));
       }
 
       listEl.innerHTML = '';
-      // Hapus player dari DOM setiap render
       if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
       playerEl.hidden = true;
 
@@ -186,19 +151,17 @@
 
         const meta = document.createElement('div');
         meta.className = 'list-meta';
-        meta.innerHTML = `<div class="title">${it.title}-${it.tanggal}</div>`+
+        meta.innerHTML = `<div class="title">${it.title}</div>`+
                  `<div><span class="badge-id">${id || ''}</span> <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
 
         const playBtn = document.createElement('button');
         playBtn.className = 'btn btn-success';
         playBtn.textContent = 'Putar';
         playBtn.onclick = async () => {
-          // Hapus player dari DOM jika ada
           if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
-          // Sisipkan player sebelum baris yang diputar
           row.parentNode.insertBefore(playerEl, row);
           playerEl.hidden = false;
-          nowTitle.textContent = `${it.title}-${it.tanggal}`; // Format sesuai permintaan
+          nowTitle.textContent = `${it.title}-${it.tanggal}`;
           nowSub.textContent = id ? id : '—';
           audioEl.removeAttribute('src');
           audioEl.load();
@@ -236,6 +199,3 @@
   </script>
 </body>
 </html>
-
-
-
