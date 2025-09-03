@@ -37,7 +37,7 @@ def wait_for_stream(url):
             print(f"[ ! ] Error: {e}, coba lagi 30 detik...")
         time.sleep(5)
 
-def run_ffmpeg(url):
+def run_ffmpeg(url, suffix=""):
     import subprocess
     import sys
     import os
@@ -59,7 +59,8 @@ def run_ffmpeg(url):
     ext_map = {"aac": "aac", "mp3": "mp3", "opus": "opus", "vorbis": "ogg"}
     ext = ext_map.get(codec, "bin")  # default bin jika codec tidak dikenali
 
-    filename = f"recordings/VOT-Denpasar_{date_str}.{ext}"
+    # Tambahkan suffix (contoh: -0, -1, dst)
+    filename = f"recordings/VOT-Denpasar_{date_str}{suffix}.{ext}"
 
     cmd = [
         "ffmpeg",
@@ -189,7 +190,14 @@ def update_recording_json(date_str, url):
         print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
+    # ambil argumen (misal: -0, -1, dst)
+    suffix = ""
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        if arg.startswith("-"):
+            suffix = arg  # simpan langsung, misal "-0"
+
     stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
-    run_ffmpeg(stream_url)
+    run_ffmpeg(stream_url, suffix)
     print("\n[ DONE ] Semua tugas selesai.")
