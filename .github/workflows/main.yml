@@ -6,7 +6,7 @@ on:
     - cron: "0 8 * * *"   # tiap hari jam 08:00 UTC (~16:00 WITA)
 
 jobs:
-  record:
+  record_0:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,9 +34,9 @@ jobs:
         env:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
-        run: python record.py
+        run: python record.py -0
 
-  record2: 
+  record_1: 
     runs-on: ubuntu-latest
 
     steps:
@@ -60,7 +60,13 @@ jobs:
       - name: Verify FFmpeg
         run: ffmpeg -version
         
-  record3: 
+      - name: Run recorder
+        env:
+          MY_ACC: ${{ secrets.MY_ACC }}
+          MY_PASS: ${{ secrets.MY_PASS }}
+        run: python record.py -1
+        
+  record_2: 
     runs-on: ubuntu-latest
 
     steps:
@@ -88,4 +94,4 @@ jobs:
         env:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
-        run: python record.py
+        run: python record.py -2
