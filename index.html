@@ -161,7 +161,7 @@
           if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
           row.parentNode.insertBefore(playerEl, row);
           playerEl.hidden = false;
-          nowTitle.textContent = `${it.title}-${it.tanggal}`;
+          nowTitle.textContent = `${it.title}`;
           nowSub.textContent = id ? id : '—';
           audioEl.removeAttribute('src');
           audioEl.load();
@@ -199,3 +199,4 @@
   </script>
 </body>
 </html>
+
