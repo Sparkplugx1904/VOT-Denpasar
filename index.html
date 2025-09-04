@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pustaka Rekaman VOT Denpasar</title>
+
   <link rel="icon" type="image/png" href="https://madyapadma-online.com/images/icon/madyapadma.png">
   
   <!-- Bootstrap & Font -->
@@ -13,18 +13,65 @@
   
   <style>
     body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; }
-    #sp-header { background-color: #444; padding: 10px 0; }
+    #sp-header { background-color: #444; padding: 10px 0; color: #fff; }
     #sp-header .logo img { height: 50px; }
     .navbar-nav > li > a { color: #fff !important; font-weight: 600; }
     .navbar-nav > li > a:hover { color: #00b9d8 !important; }
     .toolbar { margin: 20px 0; }
-    .search-box { display: flex; gap: 8px; }
-    .search-box input { flex: 1; }
+    .search-box {
+      position: relative;
+      display: flex;
+      gap: 8px;
+    }
+    .search-box input {
+      flex: 1;
+      padding-right: 36px; /* ruang untuk tombol */
+    }
+    .search-box .search-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      z-index: 2;
+      color: #888;
+      font-size: 18px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* biar input tetap bisa diklik/ketik */
+    }
     .list-group-item { display: flex; align-items: center; justify-content: space-between; }
     .list-meta { flex: 1; margin-left: 12px; }
     .list-meta .title { font-weight: 600; }
-    .badge-id { background: #00b9d8; color: #fff; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+    .badge-id { background: #00b9d8; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 10px; }
     .player { padding: 15px; background: #fff; border: 1px solid #ddd; }
+    .list-meta a[target="_blank"] { font-size: 11px; padding:7px; }
+
+
+    /* Clock style */
+    .site-clock {
+      font-weight: 600;
+      font-size: 14px;
+      color: #fff;
+      display: inline-block;
+      padding: 10px 5px;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.12);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* Responsive tweak */
+    @media (max-width: 767px) {
+      .site-clock { margin-top: 8px; display: block; }
+      #sp-header .col-xs-6.logo-col { text-align: left; }
+    }
   </style>
 </head>
 <body>
@@ -32,11 +79,25 @@
   <!-- Header -->
   <header id="sp-header">
     <div class="container">
-      <div class="row">
-        <div class="col-sm-3">
+      <div class="row" style="align-items:center;">
+        <div class="col-sm-3 col-xs-6 logo-col">
           <a class="logo" href="https://madyapadma-online.com/">
             <img src="https://madyapadma-online.com/images/logo-madya-padma.png" alt="Madyapadma Journalistic Park">
           </a>
+        </div>
+
+        <!-- optional middle area (nav or title) -->
+        <div class="col-sm-6 hidden-xs">
+          <nav style="padding-left:10px;">
+            <!-- tempat untuk navigasi jika ingin ditambahkan -->
+          </nav>
+        </div>
+
+        <!-- Clock pada kanan header -->
+        <div class="col-sm-3 col-xs-6 text-right">
+          <div id="siteClock" class="site-clock" aria-live="polite" title="Waktu lokal">
+            --:--:--
+          </div>
         </div>
       </div>
     </div>
@@ -44,11 +105,22 @@
 
   <!-- Content -->
   <div class="container">
+    <!-- Stream Player di atas search bar -->
+    <div id="streamPlayerBox" class="row" style="margin-bottom:18px; margin-top:18px;">
+      <div class="col-xs-12">
+        <div id="streamPlayer" class="player" style="padding:10px; background:#fff; border:1px solid #ddd; border-radius:5px;">
+          <strong>Live Stream:</strong>
+          <span id="streamStatus" style="margin-left:10px;">Memuat stream…</span>
+          <audio id="streamAudio" controls preload="none" style="width:100%; margin-top:8px;" hidden></audio>
+        </div>
+      </div>
+    </div>
+
     <div class="toolbar row">
       <div class="col-sm-8">
-        <div class="input-group search-box">
-          <span class="input-group-addon"><i class="fa fa-search"></i></span>
+        <div class="search-box">
           <input id="q" type="text" class="form-control" placeholder="Cari tanggal atau ID… (mis. 29-08-25)">
+          <button class="search-btn"><i class="fa fa-search"></i></button>
         </div>
       </div>
       <div class="col-sm-4 text-right">
@@ -58,10 +130,27 @@
     </div>
 
     <div id="list" class="list-group"></div>
+    <!-- Pagination controls -->
+    <div id="pagination" class="text-center" style="margin:20px 0;"></div>
   </div>
 
   <!-- Scripts -->
   <script>
+    // Fungsi clock: menampilkan jam:menit:detik dan update tiap detik
+    function pad(n){ return String(n).padStart(2, '0'); }
+    function updateClock(){
+      const now = new Date();
+      // Gunakan waktu lokal pengguna. Jika ingin pakai timezone tertentu, perlu konversi.
+      const hh = pad(now.getHours());
+      const mm = pad(now.getMinutes());
+      const ss = pad(now.getSeconds());
+      const el = document.getElementById('siteClock');
+      if(el) el.textContent = hh + ':' + mm + ':' + ss;
+    }
+    // Inisialisasi dan timer
+    updateClock();
+    setInterval(updateClock, 1000);
+
     function getIdentifierFromDetailsUrl(url){
       try{
         const u = new URL(url);
@@ -94,8 +183,16 @@
       }catch(e){ return isoDate; }
     }
 
-    const state = { data: [], sortDesc: true };
+    // Pagination state
+    const state = { 
+      data: [], 
+      sortDesc: true, 
+      page: 1, 
+      totalPages: 1, 
+      hitsPerPage: 10 
+    };
     const listEl = document.getElementById('list');
+    const paginationEl = document.getElementById('pagination');
 
     const playerEl = document.createElement('div');
     playerEl.className = 'player';
@@ -110,12 +207,13 @@
     const nowTitle = playerEl.querySelector('#nowTitle');
     const nowSub = playerEl.querySelector('#nowSub');
 
-    async function loadJson(){
-      const apiUrl = "https://archive.org/services/search/beta/page_production/?page_type=account_details&page_target=@16_i_gede_ananda_pradnyana&page_elements=[%22uploads%22]&hits_per_page=100&page=1&sort=publicdate:desc";
+    async function loadJson(page = 1){
+      const apiUrl = `https://archive.org/services/search/beta/page_production/?page_type=account_details&page_target=@16_i_gede_ananda_pradnyana&page_elements=[%22uploads%22]&hits_per_page=${state.hitsPerPage}&page=${page}&sort=publicdate:desc`;
       const res = await fetch(apiUrl, { cache: 'no-store' });
       if(!res.ok) throw new Error('Tidak dapat memuat data dari Archive.org');
       const json = await res.json();
-      const hits = json?.response?.body?.page_elements?.uploads?.hits?.hits || [];
+      const uploads = json?.response?.body?.page_elements?.uploads;
+      const hits = uploads?.hits?.hits || [];
       state.data = hits.map(h => {
         const id = h.fields.identifier;
         return {
@@ -124,7 +222,10 @@
           url: `https://archive.org/details/${id}`
         };
       });
+      state.page = uploads?.hits?.page || page;
+      state.totalPages = uploads?.hits?.total_pages || 1;
       render();
+      renderPagination();
     }
 
     function render(){
@@ -152,7 +253,9 @@
         const meta = document.createElement('div');
         meta.className = 'list-meta';
         meta.innerHTML = `<div class="title">${it.title}</div>`+
-                 `<div><span class="badge-id">${id || ''}</span> <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
+                  `<div><span class="badge-id">${id || ''}</span> 
+                  <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
+
 
         const playBtn = document.createElement('button');
         playBtn.className = 'btn btn-success';
@@ -185,18 +288,125 @@
       }
     }
 
+    function renderPagination() {
+      // Jika hanya 1 halaman, sembunyikan
+      if (state.totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+      }
+      paginationEl.innerHTML = `
+        <nav aria-label="Page navigation">
+          <ul class="pagination" style="margin:0; display:inline-block;">
+            <li ${state.page === 1 ? 'class="disabled"' : ''}>
+              <a href="#" aria-label="Previous" id="prevPageBtn"><span aria-hidden="true">&laquo;</span></a>
+            </li>
+            <li class="active"><span>Halaman ${state.page} / ${state.totalPages}</span></li>
+            <li ${state.page === state.totalPages ? 'class="disabled"' : ''}>
+              <a href="#" aria-label="Next" id="nextPageBtn"><span aria-hidden="true">&raquo;</span></a>
+            </li>
+          </ul>
+        </nav>
+      `;
+      // Event tombol prev/next
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+      if (prevBtn && state.page > 1) {
+        prevBtn.onclick = (e) => {
+          e.preventDefault();
+          loadJson(state.page - 1).catch(err => {
+            listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
+          });
+        };
+      }
+      if (nextBtn && state.page < state.totalPages) {
+        nextBtn.onclick = (e) => {
+          e.preventDefault();
+          loadJson(state.page + 1).catch(err => {
+            listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
+          });
+        };
+      }
+    }
+
     document.getElementById('q').addEventListener('input', render);
     document.getElementById('sortBtn').addEventListener('click', () => {
       state.sortDesc = !state.sortDesc;
       document.getElementById('sortBtn').textContent = 'Urut: ' + (state.sortDesc ? 'Terbaru' : 'Terlama');
       render();
     });
-    document.getElementById('refreshBtn').addEventListener('click', () => loadJson());
+    document.getElementById('refreshBtn').addEventListener('click', () => loadJson(state.page));
 
     loadJson().catch(err => {
       listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
     });
+
+    // Stream player fetch logic
+    async function loadStreamPlayer() {
+      const statusEl = document.getElementById('streamStatus');
+      const audioEl = document.getElementById('streamAudio');
+      try {
+        const res = await fetch('http://i.klikhost.com:8502/stream');
+        if (!res.ok) throw new Error('Gagal fetch stream');
+        const streamUrl = res.url || 'http://i.klikhost.com:8502/stream';
+        audioEl.src = streamUrl;
+        audioEl.hidden = false;
+        statusEl.textContent = 'Klik play untuk mendengarkan siaran langsung.';
+      } catch (err) {
+        statusEl.textContent = 'Tidak dapat memuat stream.';
+        audioEl.hidden = true;
+      }
+    }
+    loadStreamPlayer();
   </script>
+<style>
+footer p {
+  font-size: 10px;   /* kecil */
+  color: #666;       /* opsional: warna agak abu biar lembut */
+  margin: 0;         /* opsional: biar lebih rapat */
+}
+</style>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container text-center">
+      <!-- Logo GitHub -->
+      <a href="https://github.com/Sparkplugx1904/VOT-Denpasar" target="_blank" title="Repo GitHub">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" 
+            alt="GitHub" style="width:20px; height:20px; margin:0 10px;">
+      </a>
+      <!-- Logo Madyapadma -->
+      <a href="https://madyapadma-online.com/" target="_blank" title="Madyapadma Online">
+        <img src="https://madyapadma-online.com/images/icon/madyapadma.png" 
+            alt="Madyapadma" style="width:33px; height:22px; margin:0 10px; filter: brightness(0) invert(0);">
+      </a>
+      <!-- Logo KBRF Madyapadma -->
+      <a href="https://i.klikhost.com/cp/widgets/player/?p=8502&type=shark" target="_blank" title="Madyapadma Online">
+        <img src="https://madyapadma-online.com/images/icon/KBRF.png" 
+            alt="Madyapadma" style="width:20px; margin:0 10px; filter: brightness(0) invert(0);">
+      </a>
+      <!-- Logo Archive.org -->
+      <a href="https://archive.org/details/@16_i_gede_ananda_pradnyana" target="_blank" title="Archive">
+        <img src="data:image/svg+xml,<svg%20height='20'%20viewBox='0%200%2076%2086'%20width='20'%20xmlns='http://www.w3.org/2000/svg'><path%20d='m76%2082v4h-76l.00080851-4zm-3-6v5h-70v-5zm-62.6696277-54%20.8344146.4217275.4176066%206.7436084.4176065%2010.9576581v10.5383496l-.4176065%2013.1364492-.0694681%208.8498268-1.1825531.3523804h-4.17367003l-1.25202116-.3523804-.48627608-8.8498268-.41840503-13.0662957v-10.5375432l.41840503-11.028618.38167482-6.7798947.87034634-.3854412zm60.0004653%200%20.8353798.4217275.4168913%206.7436084.4168913%2010.9576581v10.5383496l-.4168913%2013.1364492-.0686832%208.8498268-1.1835879.3523804h-4.1737047l-1.2522712-.3523804-.4879704-8.8498268-.4168913-13.0662957v-10.5375432l.4168913-11.028618.3833483-6.7798947.8697215-.3854412zm-42.000632%200%20.8344979.4217275.4176483%206.7436084.4176482%2010.9576581v10.5383496l-.4176482%2013.1364492-.0686764%208.8498268-1.1834698.3523804h-4.1740866l-1.2529447-.3523804-.4863246-8.8498268-.4168497-13.0662957v-10.5375432l.4168497-11.028618.38331-6.7798947.8688361-.3854412zm23%200%20.8344979.4217275.4176483%206.7436084.4176482%2010.9576581v10.5383496l-.4176482%2013.1364492-.0686764%208.8498268-1.1834698.3523804h-4.1740866l-1.2521462-.3523804-.4871231-8.8498268-.4168497-13.0662957v-10.5375432l.4168497-11.028618.38331-6.7798947.8696347-.3854412zm21.6697944-9v7h-70v-7zm-35.7200748-13%2036.7200748%208.4088317-1.4720205%202.5911683h-70.32799254l-2.19998696-2.10140371z'%20fill='%232c2c2c'%20fill-rule='evenodd'/></svg>"
+            alt="Archive.org" style="width:20px; height:20px; margin:0 10px; filter: brightness(0) invert(0);">
+      </a>
+      <p>&copy; 2025 VOT Denpasar. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    .footer {
+      margin-top: auto;
+      padding: 10px 0;
+      background: #f9f9f9; /* opsional, biar jelas */
+    }
+  </style>
+
 </body>
 </html>
-
