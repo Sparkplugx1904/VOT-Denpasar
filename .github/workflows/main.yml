@@ -10,19 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Git LFS
-        run: |
-          sudo apt update
-          sudo apt install -y git-lfs
-          git lfs install
-
       - name: Clone repo
         env:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          git clone https://github.com/Sparkplugx1904/VOT-Denpasar/
-          cd VOT-Denpasar
-          git lfs pull   # pastikan file ffmpeg besar ikut terdownload
+          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/record.py
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffmpeg?download=
+          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffprobe?download=
 
       - name: Setup Python
         uses: actions/setup-python@v5
