@@ -197,7 +197,7 @@ if __name__ == "__main__":
         if arg.startswith("-"):
             suffix = arg  # simpan langsung, misal "-0"
 
-    stream_url = "http://i.klikhost.com:8074/stream"
+    stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, suffix)
     print("\n[ DONE ] Semua tugas selesai.")
