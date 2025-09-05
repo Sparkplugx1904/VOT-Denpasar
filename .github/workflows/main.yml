@@ -26,12 +26,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd VOT-Denpasar
           pip install -r requirements.txt
 
       - name: Verify FFmpeg
         run: |
-          cd VOT-Denpasar
           chmod +x ./ffmpeg 
           ./ffmpeg -version
 
@@ -40,5 +38,4 @@ jobs:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
-          cd VOT-Denpasar
           python record.py -0
