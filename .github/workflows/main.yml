@@ -17,7 +17,7 @@ jobs:
           curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/record.py
           curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffmpeg?download=
           curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
-          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffprobe?download=
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffprobe?download=
 
       - name: Setup Python
         uses: actions/setup-python@v5
