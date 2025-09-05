@@ -41,3 +41,75 @@ jobs:
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
           python record.py -0
+
+  record_1:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        env:
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
+        run: |
+          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/record.py
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffmpeg?download=
+          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffprobe?download=
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Verify FFmpeg
+        run: |
+          chmod +x ./ffmpeg 
+          chmod +x ./ffprobe
+          ./ffmpeg -version
+          ./ffprobe -version
+
+      - name: Run recorder
+        env:
+          MY_ACC: ${{ secrets.MY_ACC }}
+          MY_PASS: ${{ secrets.MY_PASS }}
+        run: |
+          python record.py -1
+
+  record_2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        env:
+          MY_TOKEN: ${{ secrets.MY_TOKEN }}
+        run: |
+          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/record.py
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffmpeg?download=
+          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/ffprobe?download=
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Verify FFmpeg
+        run: |
+          chmod +x ./ffmpeg 
+          chmod +x ./ffprobe
+          ./ffmpeg -version
+          ./ffprobe -version
+
+      - name: Run recorder
+        env:
+          MY_ACC: ${{ secrets.MY_ACC }}
+          MY_PASS: ${{ secrets.MY_PASS }}
+        run: |
+          python record.py -2
