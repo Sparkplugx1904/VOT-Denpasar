@@ -31,7 +31,9 @@ jobs:
       - name: Verify FFmpeg
         run: |
           chmod +x ./ffmpeg 
+          chmod +x ./ffprobe
           ./ffmpeg -version
+          ./ffprobe -version
 
       - name: Run recorder
         env:
