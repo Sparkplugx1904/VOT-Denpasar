@@ -23,7 +23,6 @@ jobs:
           git clone https://github.com/Sparkplugx1904/VOT-Denpasar/
           cd VOT-Denpasar
           git lfs pull   # pastikan file ffmpeg besar ikut terdownload
-          chmod +x ./ffmpeg  # pastikan executable
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -45,6 +44,5 @@ jobs:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
-          chmod +x ./ffmpeg  # pastikan executable
           cd VOT-Denpasar
           python record.py -0
