@@ -27,7 +27,7 @@ jobs:
         run: |
           pwd
           ls -la
-
+          file ffmpeg
       
       - name: Check ffmpeg version
         run: ffmpeg -version
