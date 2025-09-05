@@ -27,7 +27,7 @@ jobs:
         run: pwd
 
       - name: Verify FFmpeg
-        run: ffmpeg -version
+        run: /home/runner/work/VOT-Denpasar/VOT-Denpasar/ffmpeg -version
 
       - name: Run recorder
         env:
