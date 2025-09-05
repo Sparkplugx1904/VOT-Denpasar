@@ -37,6 +37,7 @@ jobs:
       - name: Verify FFmpeg
         run: |
           cd VOT-Denpasar
+          chmod +x ./ffmpeg 
           ./ffmpeg -version
 
       - name: Run recorder
