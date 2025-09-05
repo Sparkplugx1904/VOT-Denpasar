@@ -50,7 +50,7 @@ def run_ffmpeg(url, suffix=""):
 
     # Deteksi codec audio stream
     probe_cmd = [
-        "ffprobe", "-v", "error", "-select_streams", "a:0",
+        "./ffprobe", "-v", "error", "-select_streams", "a:0",
         "-show_entries", "stream=codec_name",
         "-of", "default=nokey=1:noprint_wrappers=1", url
     ]
