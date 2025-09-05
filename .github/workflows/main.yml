@@ -23,8 +23,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       
-      - name: Make ffmpeg executable
-        run: chmod +x ./ffmpeg
+      - name: Check current dir
+        run: |
+          pwd
+          ls -la
+
       
       - name: Check ffmpeg version
         run: ffmpeg -version
