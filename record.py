@@ -63,7 +63,7 @@ def run_ffmpeg(url, suffix=""):
     filename = f"recordings/VOT-Denpasar_{date_str}{suffix}.{ext}"
 
     cmd = [
-        "ffmpeg",
+        "./ffmpeg",
         "-y",
         "-reconnect", "1",
         "-reconnect_streamed", "1",
