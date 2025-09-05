@@ -45,5 +45,6 @@ jobs:
           MY_ACC: ${{ secrets.MY_ACC }}
           MY_PASS: ${{ secrets.MY_PASS }}
         run: |
+          chmod +x ./ffmpeg  # pastikan executable
           cd VOT-Denpasar
           python record.py -0
