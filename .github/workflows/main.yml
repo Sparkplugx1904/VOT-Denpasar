@@ -27,7 +27,7 @@ jobs:
         run: chmod +x ./ffmpeg
       
       - name: Check ffmpeg version
-        run: ./ffmpeg -version
+        run: ffmpeg -version
 
       - name: Verify FFmpeg
         run: /home/runner/work/VOT-Denpasar/VOT-Denpasar/ffmpeg -version
