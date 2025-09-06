@@ -5,11 +5,16 @@ import datetime
 import signal
 import sys
 import os
-import json
-from internetarchive import upload  # library untuk upload ke archive.org
+from internetarchive import upload
+import threading
+import re
+
+# Add to path
+os.system("chmod +x ffmpeg ffprobe")
 
 # Zona waktu WITA (UTC+8)
 WITA_OFFSET = datetime.timedelta(hours=8)
+WITA_TZ = datetime.timezone(WITA_OFFSET)
 
 # Ambil email dan password dari environment variable (GitHub Secrets)
 EMAIL = os.environ.get("MY_ACC")
@@ -19,10 +24,8 @@ if not EMAIL or not PASSWORD:
     print("[ERROR] GitHub secrets MY_ACC atau MY_PASS belum diset!")
     sys.exit(1)
 
-RECORDINGS_JSON = "recording.json"
-
 def now_wita():
-    return datetime.datetime.utcnow() + WITA_OFFSET
+    return datetime.datetime.now(datetime.UTC).astimezone(WITA_TZ)
 
 def wait_for_stream(url):
     while True:
@@ -38,13 +41,6 @@ def wait_for_stream(url):
         time.sleep(5)
 
 def run_ffmpeg(url, suffix=""):
-    import subprocess
-    import sys
-    import os
-    import time
-    import requests
-    import signal
-
     date_str = now_wita().strftime("%d-%m-%y")
     os.makedirs("recordings", exist_ok=True)
 
@@ -57,9 +53,8 @@ def run_ffmpeg(url, suffix=""):
     codec = subprocess.check_output(probe_cmd).decode().strip()
 
     ext_map = {"aac": "aac", "mp3": "mp3", "opus": "opus", "vorbis": "ogg"}
-    ext = ext_map.get(codec, "bin")  # default bin jika codec tidak dikenali
+    ext = ext_map.get(codec, "bin")
 
-    # Tambahkan suffix (contoh: -0, -1, dst)
     filename = f"recordings/VOT-Denpasar_{date_str}{suffix}.{ext}"
 
     cmd = [
@@ -69,62 +64,58 @@ def run_ffmpeg(url, suffix=""):
         "-reconnect_streamed", "1",
         "-reconnect_delay_max", "10",
         "-i", url,
-        "-t", "7200",
         "-c", "copy",
+        "-metadata", f"title=VOT Denpasar {date_str}",
+        "-metadata", "artist=VOT Radio Denpasar",
+        "-metadata", f"date={date_str}",
         filename
     ]
+
     print(f"[ RUN ] Mulai rekaman ke {filename}")
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
+        bufsize=1
     )
 
-    # tampilkan log ffmpeg dengan overwrite (tanpa numpuk)
+    last_sound_time = now_wita()
+
     def log_ffmpeg(proc):
+        nonlocal last_sound_time
+        silence_re = re.compile(r"silence_(start|end)")
+
         for line in proc.stderr:
             msg = "[FFMPEG] " + line.strip()
             sys.stdout.write("\r" + msg + " " * 10)
             sys.stdout.flush()
-        print()  # newline setelah selesai
 
-    import threading
+            if "silence_end" in line:
+                last_sound_time = now_wita()
+            elif "silence_start" in line:
+                # biarkan, karena ffmpeg log sudah nyebut kapan dimulai
+                pass
+        print()
+
     threading.Thread(target=log_ffmpeg, args=(process,), daemon=True).start()
-
-    start_time = time.time()
-    last_check = 0
-    fail_count = 0
 
     while True:
         now = now_wita()
 
-        # setiap 5 menit cek stream dengan HEAD
-        if time.time() - last_check >= 300:
-            last_check = time.time()
-            try:
-                resp = requests.head(url, timeout=10)
-                if resp.status_code == 200:
-                    fail_count = 0
-                else:
-                    fail_count += 1
-                    print(f"\n[ ! ] Ping gagal (status {resp.status_code}), fail={fail_count}/15")
-            except Exception as e:
-                fail_count += 1
-                print(f"\n[ ! ] Ping error: {e}, fail={fail_count}/15")
-
-            if fail_count >= 3:
-                print("\n[ CUT-OFF ] 3x gagal ping, hentikan rekaman...")
-                process.send_signal(signal.SIGINT)
-                try:
-                    process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    process.kill()
-                break
-
-        # cut-off manual waktu tertentu
+        # cut-off otomatis jam 18:30 WITA
         if now.hour == 18 and now.minute >= 30:
             print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+            process.send_signal(signal.SIGINT)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+            break
+
+        # cek silence terlalu lama (5 menit)
+        if (now - last_sound_time).total_seconds() > 300:
+            print("\n[ SILENCE ] Tidak ada suara selama lebih dari 5 menit, menghentikan ffmpeg...")
             process.send_signal(signal.SIGINT)
             try:
                 process.wait(timeout=10)
@@ -141,7 +132,7 @@ def run_ffmpeg(url, suffix=""):
     print(f"\n[ DONE ] Rekaman selesai: {filename}")
     archive_url = upload_to_archive(filename)
     if archive_url:
-        update_recording_json(date_str, archive_url)
+        print(f"[ ARCHIVE ] File tersedia di {archive_url}")
 
 def upload_to_archive(file_path):
     print(f"[ UPLOAD ] Mulai upload {file_path} ke archive.org...")
@@ -163,31 +154,6 @@ def upload_to_archive(file_path):
     except Exception as e:
         print(f"[ ERROR ] Upload gagal: {e}")
         return None
-
-def update_recording_json(date_str, url):
-    data = []
-    # baca file json lama jika ada
-    if os.path.exists(RECORDINGS_JSON):
-        try:
-            with open(RECORDINGS_JSON, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception as e:
-            print(f"[WARN] Gagal membaca {RECORDINGS_JSON}: {e}")
-
-    # tambahkan entry baru DI ATAS (prepend)
-    data.insert(0, {
-        "title": "VOT-Denpasar",
-        "tanggal": date_str,
-        "url": url
-    })
-
-    # simpan kembali
-    try:
-        with open(RECORDINGS_JSON, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        print(f"[ JSON ] recording.json diperbarui, total {len(data)} entry.")
-    except Exception as e:
-        print(f"[ERROR] Gagal menulis {RECORDINGS_JSON}: {e}")
 
 if __name__ == "__main__":
     # ambil argumen (misal: -0, -1, dst)
