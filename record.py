@@ -5,7 +5,7 @@ import datetime
 import signal
 import sys
 import os
-#from internetarchive import upload
+from internetarchive import upload
 import threading
 import re
 
