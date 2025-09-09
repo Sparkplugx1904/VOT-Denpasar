@@ -5,7 +5,7 @@ import datetime
 import signal
 import sys
 import os
-from internetarchive import upload
+#from internetarchive import upload
 import threading
 import re
 
@@ -28,6 +28,7 @@ def now_wita():
     return datetime.datetime.now(datetime.UTC).astimezone(WITA_TZ)
 
 def wait_for_stream(url):
+    last_error = None
     while True:
         try:
             resp = requests.head(url, timeout=10)
@@ -35,10 +36,16 @@ def wait_for_stream(url):
                 print(f"[ OK ] Stream tersedia {url}")
                 return
             else:
-                print(f"[ ! ] Status {resp.status_code}, coba lagi 30 detik...")
+                msg = f"Status {resp.status_code}"
+                if msg != last_error:
+                    print(f"[ ! ] {msg}, coba lagi 1 detik...")
+                    last_error = msg
         except Exception as e:
-            print(f"[ ! ] Error: {e}, coba lagi 30 detik...")
-        time.sleep(5)
+            msg = str(e)
+            if msg != last_error:
+                print(f"[ ! ] Error: {msg}, coba lagi 1 detik...")
+                last_error = msg
+        time.sleep(1)
 
 def run_ffmpeg(url, suffix=""):
     date_str = now_wita().strftime("%d-%m-%y")
@@ -50,42 +57,48 @@ def run_ffmpeg(url, suffix=""):
         "-show_entries", "stream=codec_name",
         "-of", "default=nokey=1:noprint_wrappers=1", url
     ]
-    codec = subprocess.check_output(probe_cmd).decode().strip()
+    try:
+        codec = subprocess.check_output(probe_cmd).decode().strip()
+    except subprocess.CalledProcessError:
+        codec = "bin"
 
     ext_map = {"aac": "aac", "mp3": "mp3", "opus": "opus", "vorbis": "ogg"}
     ext = ext_map.get(codec, "bin")
 
     filename = f"recordings/VOT-Denpasar_{date_str}{suffix}.{ext}"
 
-    cmd = [
-        "./ffmpeg",
-        "-y",
-        "-reconnect", "1",
-        "-reconnect_streamed", "1",
-        "-reconnect_delay_max", "10",
-        "-i", url,
-        "-c", "copy",
-        "-metadata", f"title=VOT Denpasar {date_str}",
-        "-metadata", "artist=VOT Radio Denpasar",
-        "-metadata", f"date={date_str}",
-        filename
-    ]
+    def start_ffmpeg():
+        cmd = [
+            "./ffmpeg",
+            "-y",
+            "-reconnect", "1",
+            "-reconnect_at_eof", "1",
+            "-reconnect_streamed", "1",
+            "-reconnect_delay_max", "1",             # cepat reconnect (1 detik)
+            "-reconnect_on_network_error", "1",      # retry jika jaringan putus
+            "-reconnect_on_http_error", "4xx,5xx",   # retry jika error HTTP
+            "-timeout", "5000000",                   # timeout koneksi cepat
+            "-i", url,
+            "-c", "copy",
+            "-metadata", f"title=VOT Denpasar {date_str}",
+            "-metadata", "artist=VOT Radio Denpasar",
+            "-metadata", f"date={date_str}",
+            filename
+        ]
+        print(f"[ RUN ] Mulai rekaman ke {filename}")
+        return subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1
+        )
 
-    print(f"[ RUN ] Mulai rekaman ke {filename}")
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        bufsize=1
-    )
-
+    process = start_ffmpeg()
     last_sound_time = now_wita()
 
     def log_ffmpeg(proc):
         nonlocal last_sound_time
-        silence_re = re.compile(r"silence_(start|end)")
-
         for line in proc.stderr:
             msg = "[FFMPEG] " + line.strip()
             sys.stdout.write("\r" + msg + " " * 10)
@@ -93,9 +106,6 @@ def run_ffmpeg(url, suffix=""):
 
             if "silence_end" in line:
                 last_sound_time = now_wita()
-            elif "silence_start" in line:
-                # biarkan, karena ffmpeg log sudah nyebut kapan dimulai
-                pass
         print()
 
     threading.Thread(target=log_ffmpeg, args=(process,), daemon=True).start()
@@ -113,19 +123,19 @@ def run_ffmpeg(url, suffix=""):
                 process.kill()
             break
 
-        # cek silence terlalu lama (5 menit)
-        if (now - last_sound_time).total_seconds() > 300:
-            print("\n[ SILENCE ] Tidak ada suara selama lebih dari 5 menit, menghentikan ffmpeg...")
-            process.send_signal(signal.SIGINT)
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            break
-
+        # kalau ffmpeg mati total → tunggu max 10 menit (biar tau bener-bener gagal reconnect)
         if process.poll() is not None:
-            print("\n[ DONE ] Rekaman selesai lebih cepat.")
-            break
+            print("\n[ LOST ] ffmpeg berhenti, menunggu auto-reconnect max 10 menit...")
+            wait_start = time.time()
+            while time.time() - wait_start < 600:  # 10 menit
+                if process.poll() is None:
+                    print("[ OK ] ffmpeg berhasil reconnect sendiri.")
+                    break
+                time.sleep(0.5)
+
+            if process.poll() is not None:
+                print("[ FAIL ] ffmpeg tidak bisa reconnect selama 10 menit, stop rekaman.")
+                break
 
         time.sleep(1)
 
@@ -156,12 +166,11 @@ def upload_to_archive(file_path):
         return None
 
 if __name__ == "__main__":
-    # ambil argumen (misal: -0, -1, dst)
     suffix = ""
     if len(sys.argv) > 1:
         arg = sys.argv[1]
         if arg.startswith("-"):
-            suffix = arg  # simpan langsung, misal "-0"
+            suffix = arg
 
     stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
