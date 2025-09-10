@@ -285,7 +285,7 @@
       sortDesc: true,
       page: 1,
       totalPages: 1,
-      hitsPerPage: 5,
+      hitsPerPage: 10,
       query: '',
       isSearch: false
     };
@@ -485,21 +485,34 @@
         dateRow.textContent = 'Tanggal: ' + displayTanggal;
         listEl.appendChild(dateRow);
 
-        // Urutkan file dalam grup berdasarkan identifier/suffix
+        // Helper to extract datetime string from identifier for sorting
+        function extractDateTimeFromId(id) {
+          if (!id) return '';
+          // Example id: vot-denpasar-20250908-172707
+          const match = id.match(/(\d{8}-\d{6})/);
+          return match ? match[1] : '';
+        }
+
+        // Urutkan file dalam grup berdasarkan datetime dari identifier
         group.sort((a,b) => {
-          const sufA = (a.title.match(/(\d+)\.mp3$/)||[])[1] || '';
-          const sufB = (b.title.match(/(\d+)\.mp3$/)||[])[1] || '';
-          return (sufA.localeCompare(sufB, undefined, {numeric:true}));
+          const dtA = extractDateTimeFromId(a.id);
+          const dtB = extractDateTimeFromId(b.id);
+          return state.sortDesc ? dtB.localeCompare(dtA) : dtA.localeCompare(dtB);
         });
 
         for(const it of group){
           const row = document.createElement('div');
           row.className = 'list-group-item';
 
+          const img = document.createElement('img');
+          img.src = `https://archive.org/services/img/${it.id}`;
+          img.alt = 'Thumbnail';
+          img.style = 'width:60px; height:60px; margin-right:10px; object-fit:cover; border-radius:4px;';
+
           const meta = document.createElement('div');
           meta.className = 'list-meta';
           meta.innerHTML = `<div class="title">${it.title}</div>`+
-                    `<div><span class="badge-id">${it.id || ''}</span> 
+                    `<div><span class="badge-id">${it.id || ''}</span>
                     <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
 
           const playBtn = document.createElement('button');
@@ -527,6 +540,7 @@
             }
           };
 
+          row.appendChild(img);
           row.appendChild(meta);
           row.appendChild(playBtn);
           listEl.appendChild(row);
