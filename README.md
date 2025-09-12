@@ -68,7 +68,8 @@
 - **GitHub Actions** → untuk jadwal otomatis.  
 
 ---
-
+> “This software uses FFmpeg licensed under LGPLv2.1/GPLv2.”
 <p align="center">
   <sub>Made with ❤️ by <a href="https://github.com/Sparkplugx1904" target="_blank">Sparkplugx1904</a></sub>
 </p>
+
