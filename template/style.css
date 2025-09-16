@@ -1,0 +1,235 @@
+body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; }
+#sp-header { background-color: #444; padding: 10px 0; color: #fff; }
+#sp-header .logo img { height: 50px; }
+.navbar-nav > li > a { color: #fff !important; font-weight: 600; }
+.navbar-nav > li > a:hover { color: #00b9d8 !important; }
+.toolbar { margin: 20px 0; }
+.search-box {
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+.search-box input {
+  flex: 1;
+  padding-right: 36px; /* ruang untuk tombol */
+}
+.search-box .search-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+  color: #888;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.list-group-item { display: flex; align-items: center; justify-content: space-between; }
+.list-meta { flex: 1; margin-left: 12px; }
+.list-meta .title { font-weight: 600; }
+.badge-id { background: #00b9d8; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 10px; }
+.player { padding: 15px; background: #fff; border: 1px solid #ddd; }
+.list-meta a[target="_blank"] { font-size: 11px; padding:7px; }
+
+
+/* Clock style */
+.site-clock {
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  display: inline-block;
+  padding: 10px 5px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.12);
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Dark mode styles */
+body.dark-mode { background-color: #181a1b; color: #e0e0e0; }
+body.dark-mode #sp-header { background-color: #222; color: #eee; }
+body.dark-mode .player { background: #232323 !important; border-color: #444 !important; color: #e0e0e0 !important; }
+body.dark-mode #streamPlayer .player, body.dark-mode #streamPlayer { background: #232323 !important; color: #e0e0e0 !important; }
+body.dark-mode #streamStatus { color: #e0e0e0 !important; }
+body.dark-mode .list-group-item { background: #232323; border-color: #444; color: #e0e0e0; }
+body.dark-mode .badge-id { background: #0097b9; color: #fff; }
+body.dark-mode .site-clock { background: rgba(0,0,0,0.32); color: #fff; }
+body.dark-mode .footer { background: #222; color: #ccc; }
+body.dark-mode .search-box input { background: #232323; color: #e0e0e0; border-color: #444; }
+body.dark-mode .search-box .search-btn { color: #bbb; }
+body.dark-mode .btn-default, body.dark-mode .btn-primary, body.dark-mode .btn-success {
+  background: #333; color: #e0e0e0; border-color: #444;
+}
+body.dark-mode .btn-primary { background: #007bff; border-color: #007bff; }
+body.dark-mode .btn-success { background: #00b97b; border-color: #00b97b; }
+body.dark-mode .pagination > li > a, body.dark-mode .pagination > li > span {
+  background: #232323; color: #e0e0e0; border-color: #444;
+}
+body.dark-mode .pagination > .active > span { background: #0097b9; border-color: #0097b9; color: #fff; }
+body.dark-mode .list-meta a[target="_blank"] { color: #80cfff; }
+
+/* Page input styles - remove spinners and adapt to dark mode */
+.page-input {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+.page-input::-webkit-outer-spin-button,
+.page-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+body.dark-mode .page-input {
+  background: #232323;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+/* Footer logo to white in dark mode */
+body.dark-mode .footer img,
+body.dark-mode .footer a img {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Responsive tweak */
+@media (max-width: 767px) {
+  .site-clock { margin-top: 8px; display: block; }
+  #sp-header .col-xs-6.logo-col { text-align: left; }
+
+  /* Reduce padding and font sizes for mobile */
+  body {
+    font-size: 14px;
+  }
+  #sp-header {
+    padding: 8px 0;
+  }
+  #sp-header .logo img {
+    height: 40px;
+  }
+  .navbar-nav > li > a {
+    font-size: 14px;
+  }
+  .toolbar {
+    margin: 15px 0;
+  }
+  .search-box input {
+    font-size: 14px;
+    padding: 6px 36px 6px 10px;
+  }
+  .search-box .search-btn {
+    font-size: 16px;
+    width: 24px;
+    height: 24px;
+  }
+  .list-group-item {
+    padding: 8px 10px;
+  }
+  .list-meta .title {
+    font-size: 14px;
+  }
+  .badge-id {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  .player {
+    padding: 10px;
+    font-size: 14px;
+  }
+  .list-meta a[target="_blank"] {
+    font-size: 10px;
+    padding: 5px;
+  }
+  .site-clock {
+    font-size: 12px;
+    padding: 6px 4px;
+    min-width: 50px;
+  }
+  .date-group-header {
+    font-size: 13px;
+    padding: 5px 10px;
+    margin: 10px 0 5px 0;
+  }
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    margin-right: 6px;
+  }
+  .loading-text {
+    font-size: 13px;
+  }
+  .footer img {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 6px !important;
+  }
+  footer p {
+    font-size: 9px;
+  }
+}
+
+.date-group-header {
+  font-weight: 700;
+  font-size: 15px;
+  background: #e6f7fa;
+  color: #0097b9;
+  padding: 7px 12px;
+  border-radius: 4px;
+  margin: 12px 0 6px 0;
+  border-left: 5px solid #00b9d8;
+  /* transition for theme */
+  transition: background 0.2s, color 0.2s;
+}
+body.dark-mode .date-group-header {
+  background: #232323;
+  color: #80cfff;
+  border-left-color: #0097b9;
+}
+
+/* Loading animation */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #00b9d8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+body.dark-mode .loading-spinner {
+  border-color: #444;
+  border-top-color: #80cfff;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-text {
+  display: inline-block;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+footer p { font-size: 10px; color: #666; margin: 0; }
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  display: flex;
+  flex-direction: column;
+}
+.footer {
+  margin-top: auto;
+  padding: 10px 0;
+  background: #f9f9f9; /* opsional, biar jelas */
+}

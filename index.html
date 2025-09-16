@@ -10,159 +10,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap" rel="stylesheet">
-  
-  <style>
-    body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; }
-    #sp-header { background-color: #444; padding: 10px 0; color: #fff; }
-    #sp-header .logo img { height: 50px; }
-    .navbar-nav > li > a { color: #fff !important; font-weight: 600; }
-    .navbar-nav > li > a:hover { color: #00b9d8 !important; }
-    .toolbar { margin: 20px 0; }
-    .search-box {
-      position: relative;
-      display: flex;
-      gap: 8px;
-    }
-    .search-box input {
-      flex: 1;
-      padding-right: 36px; /* ruang untuk tombol */
-    }
-    .search-box .search-btn {
-      position: absolute;
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-      border: none;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-      z-index: 2;
-      color: #888;
-      font-size: 18px;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .list-group-item { display: flex; align-items: center; justify-content: space-between; }
-    .list-meta { flex: 1; margin-left: 12px; }
-    .list-meta .title { font-weight: 600; }
-    .badge-id { background: #00b9d8; color: #fff; padding: 3px 8px; border-radius: 3px; font-size: 10px; }
-    .player { padding: 15px; background: #fff; border: 1px solid #ddd; }
-    .list-meta a[target="_blank"] { font-size: 11px; padding:7px; }
-
-
-    /* Clock style */
-    .site-clock {
-      font-weight: 600;
-      font-size: 14px;
-      color: #fff;
-      display: inline-block;
-      padding: 10px 5px;
-      border-radius: 6px;
-      background: rgba(0,0,0,0.12);
-      min-width: 60px;
-      text-align: center;
-    }
-
-    /* Dark mode styles */
-    body.dark-mode { background-color: #181a1b; color: #e0e0e0; }
-    body.dark-mode #sp-header { background-color: #222; color: #eee; }
-    body.dark-mode .player { background: #232323 !important; border-color: #444 !important; color: #e0e0e0 !important; }
-    body.dark-mode #streamPlayer .player, body.dark-mode #streamPlayer { background: #232323 !important; color: #e0e0e0 !important; }
-    body.dark-mode #streamStatus { color: #e0e0e0 !important; }
-    body.dark-mode .list-group-item { background: #232323; border-color: #444; color: #e0e0e0; }
-    body.dark-mode .badge-id { background: #0097b9; color: #fff; }
-    body.dark-mode .site-clock { background: rgba(0,0,0,0.32); color: #fff; }
-    body.dark-mode .footer { background: #222; color: #ccc; }
-    body.dark-mode .search-box input { background: #232323; color: #e0e0e0; border-color: #444; }
-    body.dark-mode .search-box .search-btn { color: #bbb; }
-    body.dark-mode .btn-default, body.dark-mode .btn-primary, body.dark-mode .btn-success {
-      background: #333; color: #e0e0e0; border-color: #444;
-    }
-    body.dark-mode .btn-primary { background: #007bff; border-color: #007bff; }
-    body.dark-mode .btn-success { background: #00b97b; border-color: #00b97b; }
-    body.dark-mode .pagination > li > a, body.dark-mode .pagination > li > span {
-      background: #232323; color: #e0e0e0; border-color: #444;
-    }
-    body.dark-mode .pagination > .active > span { background: #0097b9; border-color: #0097b9; color: #fff; }
-    body.dark-mode .list-meta a[target="_blank"] { color: #80cfff; }
-
-    /* Page input styles - remove spinners and adapt to dark mode */
-    .page-input {
-      -webkit-appearance: none;
-      -moz-appearance: textfield;
-    }
-    .page-input::-webkit-outer-spin-button,
-    .page-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    body.dark-mode .page-input {
-      background: #232323;
-      color: #e0e0e0;
-      border-color: #444;
-    }
-
-    /* Footer logo to white in dark mode */
-    body.dark-mode .footer img,
-    body.dark-mode .footer a img {
-      filter: brightness(0) invert(1) !important;
-    }
-
-    /* Responsive tweak */
-    @media (max-width: 767px) {
-      .site-clock { margin-top: 8px; display: block; }
-      #sp-header .col-xs-6.logo-col { text-align: left; }
-    }
-
-    .date-group-header {
-      font-weight: 700;
-      font-size: 15px;
-      background: #e6f7fa;
-      color: #0097b9;
-      padding: 7px 12px;
-      border-radius: 4px;
-      margin: 12px 0 6px 0;
-      border-left: 5px solid #00b9d8;
-      /* transition for theme */
-      transition: background 0.2s, color 0.2s;
-    }
-    body.dark-mode .date-group-header {
-      background: #232323;
-      color: #80cfff;
-      border-left-color: #0097b9;
-    }
-
-    /* Loading animation */
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #00b9d8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 10px;
-    }
-    body.dark-mode .loading-spinner {
-      border-color: #444;
-      border-top-color: #80cfff;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-text {
-      display: inline-block;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-  </style>
+  <link rel="stylesheet" href="template/style.css">
 </head>
 <body>
 
@@ -186,7 +34,7 @@
         <!-- Clock pada kanan header -->
         <div class="col-sm-3 col-xs-6 text-right">
           <div style="display:flex; align-items:center; justify-content:flex-end;">
-            <div id="siteClock" class="site-clock" aria-live="polite" title="Waktu lokal">
+            <div id="siteClock" class="site-clock" aria-live="polite" title="Waktu WITA">
               --:--:--
             </div>
             <!-- Toggle dark mode button -->
@@ -232,16 +80,18 @@
 
   <!-- Scripts -->
   <script>
-    // Fungsi clock: menampilkan jam:menit:detik dan update tiap detik
+    // Fungsi clock: menampilkan jam:menit:detik WITA dan update tiap detik
     function pad(n){ return String(n).padStart(2, '0'); }
     function updateClock(){
       const now = new Date();
-      // Gunakan waktu lokal pengguna. Jika ingin pakai timezone tertentu, perlu konversi.
-      const hh = pad(now.getHours());
-      const mm = pad(now.getMinutes());
-      const ss = pad(now.getSeconds());
+      // Gunakan waktu WITA (UTC+8)
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const witaTime = new Date(utc + (8 * 3600000));
+      const hh = pad(witaTime.getHours());
+      const mm = pad(witaTime.getMinutes());
+      const ss = pad(witaTime.getSeconds());
       const el = document.getElementById('siteClock');
-      if(el) el.textContent = hh + ':' + mm + ':' + ss;
+      if(el) el.textContent = hh + ':' + mm + ':' + ss + ' WITA';
     }
     // Inisialisasi dan timer
     updateClock();
@@ -563,7 +413,7 @@
               <a href="#" aria-label="Previous" id="prevPageBtn"><span aria-hidden="true">&laquo;</span></a>
             </li>
             <li>
-              <input type="text" pattern="[0-9]*" inputmode="numeric" id="pageInput" min="1" max="${state.totalPages}" value="${state.page}" class="page-input" style="width:60px; padding:4px; border:1px solid #ccc; text-align:center; color:inherit;" title="Masukkan nomor halaman" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <input type="text" pattern="[0-9]*" inputmode="numeric" id="pageInput" min="1" max="${state.totalPages}" value="${state.page}" class="page-input" style="width:50px; height:34px; padding:4px; border:1px solid #444; text-align:center; color:inherit;" title="Masukkan nomor halaman" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             </li>
             <li style="padding:0 8px;">
               <span> / ${state.totalPages}</span>
@@ -663,9 +513,9 @@
       const statusEl = document.getElementById('streamStatus');
       const audioEl = document.getElementById('streamAudio');
       try {
-        const res = await fetch('https://i.klikhost.com:8502/stream');
+        const res = await fetch('http://i.klikhost.com:8502/stream');
         if (!res.ok) throw new Error('Gagal fetch stream');
-        const streamUrl = res.url || 'https://i.klikhost.com:8502/stream';
+        const streamUrl = res.url || 'http://i.klikhost.com:8502/stream';
         audioEl.src = streamUrl;
         audioEl.hidden = false;
         statusEl.textContent = 'Klik play untuk mendengarkan siaran langsung.';
@@ -695,25 +545,23 @@
       setMode(!document.body.classList.contains('dark-mode'));
     };
   </script>
-<style>
-footer p { font-size: 10px; color: #666; margin: 0; }
-</style>
+  <script src="template/script.js"></script>
   <!-- Footer -->
   <footer class="footer">
     <div class="container text-center">
       <!-- Logo GitHub -->
       <a href="https://github.com/Sparkplugx1904/VOT-Denpasar" target="_blank" title="Repo GitHub">
-        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" 
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png"
             alt="GitHub" style="width:20px; height:20px; margin:0 10px;">
       </a>
       <!-- Logo Madyapadma -->
       <a href="https://madyapadma-online.com/" target="_blank" title="Madyapadma Online">
-        <img src="https://madyapadma-online.com/images/icon/madyapadma.png" 
+        <img src="https://madyapadma-online.com/images/icon/madyapadma.png"
             alt="Madyapadma" style="width:33px; height:22px; margin:0 10px; filter: brightness(0) invert(0);">
       </a>
       <!-- Logo KBRF Madyapadma -->
       <a href="https://i.klikhost.com/cp/widgets/player/?p=8502&type=shark" target="_blank" title="Madyapadma Online">
-        <img src="https://madyapadma-online.com/images/icon/KBRF.png" 
+        <img src="https://madyapadma-online.com/images/icon/KBRF.png"
             alt="Madyapadma" style="width:20px; margin:0 10px; filter: brightness(0) invert(0);">
       </a>
       <!-- Logo Archive.org -->
@@ -725,22 +573,5 @@ footer p { font-size: 10px; color: #666; margin: 0; }
     </div>
   </footer>
 
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-    .footer {
-      margin-top: auto;
-      padding: 10px 0;
-      background: #f9f9f9; /* opsional, biar jelas */
-    }
-  </style>
-
 </body>
 </html>
-
