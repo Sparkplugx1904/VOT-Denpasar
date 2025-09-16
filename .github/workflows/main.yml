@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["-0", "-1", "-2"]
+        suffix: ["-s 0 -p 0", "-s 1 -p 1", "-s 2 -p 2"]
 
     steps:
       - name: Clone repo
@@ -18,9 +18,9 @@ jobs:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
           curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/main/record.py
-          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffmpeg?download=
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffmpeg
           curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
-          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffprobe?download=
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffprobe
 
       - name: Setup Python
         uses: actions/setup-python@v5

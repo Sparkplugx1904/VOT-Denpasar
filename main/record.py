@@ -5,6 +5,7 @@ import datetime
 import signal
 import sys
 import os
+import argparse
 from internetarchive import upload
 import threading
 import re
@@ -47,7 +48,7 @@ def wait_for_stream(url):
                 last_error = msg
         time.sleep(1)
 
-def run_ffmpeg(url, suffix=""):
+def run_ffmpeg(url, suffix="", position=0):
     date_str = now_wita().strftime("%d-%m-%y")
     os.makedirs("recordings", exist_ok=True)
 
@@ -65,7 +66,10 @@ def run_ffmpeg(url, suffix=""):
     ext_map = {"aac": "aac", "mp3": "mp3", "opus": "opus", "vorbis": "ogg"}
     ext = ext_map.get(codec, "bin")
 
-    filename = f"recordings/VOT-Denpasar_{date_str}{suffix}.{ext}"
+    if suffix:
+        filename = f"recordings/VOT-Denpasar_{date_str}-{suffix}.{ext}"
+    else:
+        filename = f"recordings/VOT-Denpasar_{date_str}.{ext}"
 
     def start_ffmpeg():
         cmd = [
@@ -140,6 +144,10 @@ def run_ffmpeg(url, suffix=""):
         time.sleep(1)
 
     print(f"\n[ DONE ] Rekaman selesai: {filename}")
+    if position > 0:
+        delay = position * 10
+        print(f"[ DELAY ] Menunggu {delay} detik sebelum upload...")
+        time.sleep(delay)
     archive_url = upload_to_archive(filename)
     if archive_url:
         print(f"[ ARCHIVE ] File tersedia di {archive_url}")
@@ -166,13 +174,12 @@ def upload_to_archive(file_path):
         return None
 
 if __name__ == "__main__":
-    suffix = ""
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-        if arg.startswith("-"):
-            suffix = arg
+    parser = argparse.ArgumentParser(description="Record stream and upload with suffix and delay")
+    parser.add_argument("-s", "--suffix", type=str, default="", help="Suffix to add at the end of filename")
+    parser.add_argument("-p", "--position", type=int, default=0, help="Position to determine delay before upload (delay = position * 10 seconds)")
+    args = parser.parse_args()
 
     stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
-    run_ffmpeg(stream_url, suffix)
+    run_ffmpeg(stream_url, args.suffix, args.position)
     print("\n[ DONE ] Semua tugas selesai.")
