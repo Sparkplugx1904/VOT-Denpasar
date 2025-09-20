@@ -173,7 +173,8 @@ def upload_to_archive(file_path):
         print(f"[ ERROR ] Upload gagal: {e}")
         return None
 
-if __name__ == "__main__":
+def main_recording():
+    """Main recording function that can be restarted"""
     parser = argparse.ArgumentParser(description="Record stream and upload with suffix and delay")
     parser.add_argument("-s", "--suffix", type=str, default="", help="Suffix to add at the end of filename")
     parser.add_argument("-p", "--position", type=int, default=0, help="Position to determine delay before upload (delay = position * 10 seconds)")
@@ -183,3 +184,34 @@ if __name__ == "__main__":
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, args.suffix, args.position)
     print("\n[ DONE ] Semua tugas selesai.")
+    return True
+
+if __name__ == "__main__":
+    print("[ START ] Memulai program recording dengan restart otomatis...")
+
+    while True:
+        now = now_wita()
+
+        # Jika sudah jam 18:30 WITA atau lebih, hentikan program
+        if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
+            print(f"\n[ STOP ] Sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+            break
+
+        # Jalankan recording
+        print(f"\n[ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
+        try:
+            main_recording()
+        except Exception as e:
+            print(f"[ ERROR ] Terjadi error: {e}")
+
+        # Cek waktu lagi setelah recording selesai
+        now = now_wita()
+        if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
+            print(f"\n[ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+            break
+        else:
+            print(f"\n[ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
+            print("[ INFO ] Menunggu 0 detik sebelum restart...")
+            continue
+
+    print("\n[ END ] Program selesai.")
