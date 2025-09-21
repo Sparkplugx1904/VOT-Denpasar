@@ -1,0 +1,20 @@
+<div style="display:flex;flex-wrap:wrap;gap:8px;">
+  <small style="display:inline-block;">👤 SUPER USER&nbsp;&nbsp;</small>
+  <small style="display:inline-block;">
+    <a href="https://madyapadma-online.com/tentang-kami" style="color:#eb4947; text-decoration:none;">TENTANG KAMI&nbsp;&nbsp;</a>
+  </small>
+  <small style="display:inline-block;">📅 27 DECEMBER 2018</small>
+</div>
+
+# Tentang Kami
+<div align="justify">
+&nbsp;&nbsp;&nbsp;&nbsp;Perkenalkan kami adalah siswa dan siswi yang tergabung dalam Madyapadma, satu-satunya ekstra kurikuler jurnalistik di SMAN 3 Denpasar (Trisma). Kalau sekedar nama dari Madyapadma mungkin sudah banyak yang pernah mendengarnya. Tapi kalau tentang arti dari nama Madyapadma itu sendiri? Mungkin belum banyak yang mengetahuinya. Jika demikian mari kita simak uraian singkat soal Madyapadma.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Madyapadma atau yang lebih sering disebut dengan MP sebenarnya adalah kependekan nama dari Madyapadma Journalistic Park. Sebelum nama Madyapadma tercetus,  nama Widya Stana yang merupakan nama awal dari ekstra jurnalistik di Trisma. Keberadaan Widya Stana sudah ada sejak awal Trisma berdiri. Hanya saja karena satu dan lain hal Widya Stana berganti nama menjadi Madyapadma pada angkatan III Trisma. Konon pergantian nama tersebut disebabkan oleh sebuah pemberitaan dari redaksinya sendiri yang menyinggung suatu pihak yang berujung pada pemberedelan Widya Stana. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;Pemilihan nama Madyapadma sebagai pengganti dari Widya Stana bukanlah tanpa suatu pertimbangan. Dibalik nama tersebut ternyata tersimpan sebuah filosofi sederhana nan dalam. Madyapadma sendiri tersusun dari dua kata indah yaitu Madya dan Padma. Madya berarti tengah dan Padma berarti teratai. Seperti yang kita ketahui, teratai merupakan sebuah tumbuhan yang dapat hidup di tiga tempat sekaligus. Akarnya menancap kuat nan kokoh di tanah, batangnya menjulang tegak dan kuat hingga sampai di permukaan, daun serta bunganya pun tumbuh cantik menghiasi permukaan air. Sebuah mahakarya sederhana yang dapat memberikan pembelajaran bagi warga yang bernaung di payung Madyapadma tentang bagaimana menjadi pers yang mampu menyelami berbagai kalangan mulai dari kalangan bawah, menengah, hingga atas. Sementara kata Madya berarti tengah. Menggambarkan Madyapadma sebagai pers yang berada di tengah-tengah teratai. Menuntut Madyapadma untuk menjadi pers yang adil, tidak memihak dan bisa menjadi penengah dalam berbagai situasi. Yang dengan segala kemampuannya juga menunjukkan sikap independen dalam setiap pemberitaannya.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Bertahun-tahun berdiri Madyapadma tumbuh menjadi sebuah ekstra kurikuler jurnalistik yang tak hanya fokus pada bidang redaksional saja tetapi juga banyak bidang lain seperti fotografi, perfilman, penyiaran radio, dan lain – lain. Bagi Madyapadma bidang-bidang baru tesebut merupakan suatu penyegaran untuk membuat Madyapadma menjadi lebih hidup dan aktif. Sekaligus sebagai sebuah ciri dari Madyapadma yang membedakannya dari ekstra jurnalistik putih abu lainnya. Untuk takaran sebuah ciri tentunya sesuatu itu haruslah dikuasai dan dimiliki secara penuh. Membuat Madyapadma gencar memantapkan segala bidang dengan jalan pelatihan di luar jam ekstra kurikuler sekolah. Adapun bentuk dari pelatihan itu seperti: pelatihan radio, film bahkan pelatihan kepemimpinan yang memberikan dampak tak langsung bagi warga Madyapadma dalam menjalankan kesehariannya sebagai seorang jurnalis. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;Melihat berbagai bidang yang berkembang dalam Madyapadma rasanya tak lengkap jika hanya menggunakannya untuk diri Madyapadma sendri tanpa bisa dibagi bersama orang lain. Oleh karena itulah, sekitar lima tahun yang lalu Madyapadma mulai menggarap sebuah acara sederhana yaitu acara tahunan Presslist. Acara ini adalah acara rutin yang di dalamnya merangkum segala hal yang ada dalam diri Madyapadma. Setiap tahun layaknya menjadi tahun pertama bagi Presslist. Karena di setiap tahun pasti ada inovasi baru yang Madyapadma hadirkan dan pastinya kehadirannya akan mengundang ‘pelototan tajam’ nan takjub para pengunjungnya.
+</div>
