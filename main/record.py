@@ -78,7 +78,7 @@ def run_ffmpeg(url, suffix="", position=0):
             "-reconnect", "1",
             "-reconnect_at_eof", "1",
             "-reconnect_streamed", "1",
-            "-reconnect_delay_max", "1",             # cepat reconnect (1 detik)
+            "-reconnect_delay_max", "0",             # reconnect segera tanpa delay
             "-reconnect_on_network_error", "1",      # retry jika jaringan putus
             "-reconnect_on_http_error", "4xx,5xx",   # retry jika error HTTP
             "-timeout", "5000000",                   # timeout koneksi cepat
