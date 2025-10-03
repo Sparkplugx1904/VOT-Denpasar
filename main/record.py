@@ -39,14 +39,14 @@ def wait_for_stream(url):
             else:
                 msg = f"Status {resp.status_code}"
                 if msg != last_error:
-                    print(f"[ ! ] {msg}, coba lagi 0.05 detik...")
+                    print(f"[ ! ] {msg}, coba lagi 0.1 detik...")
                     last_error = msg
         except Exception as e:
             msg = str(e)
             if msg != last_error:
-                print(f"[ ! ] Error: {msg}, coba lagi 0.05 detik...")
+                print(f"[ ! ] Error: {msg}, coba lagi 0.1 detik...")
                 last_error = msg
-        time.sleep(0.05)
+        time.sleep(0.1)
 
 def run_ffmpeg(url, suffix="", position=0):
     date_str = now_wita().strftime("%d-%m-%y")
@@ -135,13 +135,13 @@ def run_ffmpeg(url, suffix="", position=0):
                 if process.poll() is None:
                     print("[ OK ] ffmpeg berhasil reconnect sendiri.")
                     break
-                time.sleep(0.5)
+                time.sleep(0.1)
 
             if process.poll() is not None:
                 print("[ FAIL ] ffmpeg tidak bisa reconnect selama 10 menit, stop rekaman.")
                 break
 
-        time.sleep(0.01)
+        time.sleep(0.1)
 
     print(f"\n[ DONE ] Rekaman selesai: {filename}")
     if position > 0:
