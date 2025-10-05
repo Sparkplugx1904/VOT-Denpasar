@@ -22,7 +22,7 @@ EMAIL = os.environ.get("MY_ACC")
 PASSWORD = os.environ.get("MY_PASS")
 
 if not EMAIL or not PASSWORD:
-    print("[ERROR] GitHub secrets MY_ACC atau MY_PASS belum diset!")
+    print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ERROR ] GitHub secrets MY_ACC atau MY_PASS belum diset!")
     sys.exit(1)
 
 def now_wita():
@@ -32,21 +32,22 @@ def wait_for_stream(url):
     last_error = None
     while True:
         try:
+            print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ! ] {msg}, coba lagi 1 detik...", end='\r', flush=True)
             resp = requests.head(url, timeout=10)
             if resp.status_code == 200:
-                print(f"[ OK ] Stream tersedia {url}")
+                print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ OK ] Stream tersedia {url}")
                 return
             else:
                 msg = f"Status {resp.status_code}"
                 if msg != last_error:
-                    print(f"[ ! ] {msg}, coba lagi 0.1 detik...")
+                    print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ! ] {msg}, coba lagi 1 detik...")
                     last_error = msg
         except Exception as e:
             msg = str(e)
             if msg != last_error:
-                print(f"[ ! ] Error: {msg}, coba lagi 0.1 detik...")
+                print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ! ] Error: {msg}, coba lagi 1 detik...")
                 last_error = msg
-        time.sleep(0.1)
+        time.sleep(1)
 
 def run_ffmpeg(url, suffix="", position=0):
     date_str = now_wita().strftime("%d-%m-%y")
@@ -89,7 +90,7 @@ def run_ffmpeg(url, suffix="", position=0):
             "-metadata", f"date={date_str}",
             filename
         ]
-        print(f"[ RUN ] Mulai rekaman ke {filename}")
+        print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ RUN ] Mulai rekaman ke {filename}")
         return subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
@@ -119,7 +120,7 @@ def run_ffmpeg(url, suffix="", position=0):
 
         # cut-off otomatis jam 18:30 WITA
         if now.hour == 18 and now.minute >= 30:
-            print("\n[ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+            print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
             process.send_signal(signal.SIGINT)
             try:
                 process.wait(timeout=10)
@@ -129,31 +130,31 @@ def run_ffmpeg(url, suffix="", position=0):
 
         # kalau ffmpeg mati total → tunggu max 10 menit (biar tau bener-bener gagal reconnect)
         if process.poll() is not None:
-            print("\n[ LOST ] ffmpeg berhenti, menunggu auto-reconnect max 10 menit...")
+            print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ LOST ] ffmpeg berhenti, menunggu auto-reconnect max 10 menit...")
             wait_start = time.time()
             while time.time() - wait_start < 600:  # 10 menit
                 if process.poll() is None:
-                    print("[ OK ] ffmpeg berhasil reconnect sendiri.")
+                    print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ OK ] ffmpeg berhasil reconnect sendiri.")
                     break
                 time.sleep(0.1)
 
             if process.poll() is not None:
-                print("[ FAIL ] ffmpeg tidak bisa reconnect selama 10 menit, stop rekaman.")
+                print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ FAIL ] ffmpeg tidak bisa reconnect selama 10 menit, stop rekaman.")
                 break
 
-        time.sleep(0.1)
+        time.sleep(1)
 
-    print(f"\n[ DONE ] Rekaman selesai: {filename}")
+    print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ DONE ] Rekaman selesai: {filename}")
     if position > 0:
         delay = position * 10
-        print(f"[ DELAY ] Menunggu {delay} detik sebelum upload...")
+        print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ DELAY ] Menunggu {delay} detik sebelum upload...")
         time.sleep(delay)
     archive_url = upload_to_archive(filename)
     if archive_url:
-        print(f"[ ARCHIVE ] File tersedia di {archive_url}")
+        print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ARCHIVE ] File tersedia di {archive_url}")
 
 def upload_to_archive(file_path):
-    print(f"[ UPLOAD ] Mulai upload {file_path} ke archive.org...")
+    print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ UPLOAD ] Mulai upload {file_path} ke archive.org...")
     try:
         item_identifier = f"vot-denpasar-{now_wita().strftime('%Y%m%d-%H%M%S')}"
         upload(item_identifier,
@@ -167,10 +168,10 @@ def upload_to_archive(file_path):
                secret_key=PASSWORD,
                verbose=True)
         archive_url = f"https://archive.org/details/{item_identifier}"
-        print(f"[ DONE ] Upload berhasil: {archive_url}")
+        print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ DONE ] Upload berhasil: {archive_url}")
         return archive_url
     except Exception as e:
-        print(f"[ ERROR ] Upload gagal: {e}")
+        print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ERROR ] Upload gagal: {e}")
         return None
 
 def main_recording():
@@ -183,34 +184,34 @@ def main_recording():
     stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, args.suffix, args.position)
-    print("\n[ DONE ] Semua tugas selesai.")
+    print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ DONE ] Semua tugas selesai.")
     return True
 
 if __name__ == "__main__":
-    print("[ START ] Memulai program recording dengan restart otomatis...")
+    print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ START ] Memulai program recording dengan restart otomatis...")
 
     while True:
         now = now_wita()
 
         # Jika sudah jam 18:30 WITA atau lebih, hentikan program
         if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
-            print(f"\n[ STOP ] Sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+            print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ STOP ] Sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
             break
 
         # Jalankan recording
-        print(f"\n[ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
+        print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
         try:
             main_recording()
         except Exception as e:
-            print(f"[ ERROR ] Terjadi error: {e}")
+            print(f"\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ ERROR ] Terjadi error: {e}")
 
         # Cek waktu lagi setelah recording selesai
         now = now_wita()
         if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
-            print(f"\n[ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+            print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
             break
         else:
-            print(f"\n[ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
+            print(f"\n\033[34m[{datetime.datetime.now().strftime('%H:%M:%S')}]\033[0m [ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
             print("[ INFO ] Menunggu 0 detik sebelum restart...")
             continue
 
