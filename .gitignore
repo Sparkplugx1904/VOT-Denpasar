@@ -5,3 +5,9 @@ TODO.md
 recordings
 ffmpeg
 ffprobe
+*/tempCodeRunnerFile.sh
+node_modules
+main/tempCodeRunnerFile.py
+package.json
+package-lock.json
+global-ping.js
