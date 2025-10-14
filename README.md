@@ -18,6 +18,12 @@
 ---
 
 <p align="center">
+  <a href="https://madyapadma-online.com/" target="_blank">
+    <img src="https://github.com/Sparkplugx1904/VOT-Denpasar/blob/main/assets/vot_banner.png?raw=true" alt="VOT-Radio Denpasar" width="/>
+  </a>
+</p>
+
+<p align="center">
   <!-- Badge untuk Archive -->
   <a href="https://sparkplugx1904.github.io/VOT-Denpasar/" target="_blank">
     <img src="https://img.shields.io/badge/Dengarkan%20Arsip%20Disini-blue?style=for-the-badge&logo=github&logoColor=white" alt="Listen Archive"/>
