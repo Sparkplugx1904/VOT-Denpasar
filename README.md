@@ -19,7 +19,7 @@
 
 <p align="center">
   <a href="https://madyapadma-online.com/" target="_blank">
-    <img src="https://github.com/Sparkplugx1904/VOT-Denpasar/blob/main/assets/vot_banner.png?raw=true" alt="VOT-Radio Denpasar" width="/>
+    <img src="https://github.com/Sparkplugx1904/VOT-Denpasar/blob/main/assets/mptv_banner.png?raw=true" alt="VOT-Radio Denpasar" width="/>
   </a>
 </p>
 
