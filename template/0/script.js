@@ -47,15 +47,17 @@ function formatDate(isoDate){
   }catch(e){ return isoDate; }
 }
 
-// Pagination state
+// Pagination state - updated for lazy loading
 const state = {
-  data: [],
+  allData: [],
   sortDesc: true,
-  page: 1,
+  currentPage: 1,
   totalPages: 1,
   hitsPerPage: 10,
   query: '',
-  isSearch: false
+  isSearch: false,
+  isLoading: false,
+  hasMore: true
 };
 let pageCache = {};
 const listEl = document.getElementById('list');
@@ -76,14 +78,19 @@ const nowSub = playerEl.querySelector('#nowSub');
 
 async function loadJson(page = 1){
   if(pageCache[page]){
-    state.data = pageCache[page];
-    state.page = page;
-    render();
-    renderPagination();
+    state.allData = state.allData.concat(pageCache[page]);
+    state.currentPage = page;
+    state.hasMore = page < state.totalPages;
+    if(page === 1) render();
+    else appendGroups(pageCache[page]);
     return;
   }
 
-  listEl.innerHTML = '<div class="list-group-item text-center"><div class="loading-spinner"></div><span class="loading-text">Memuat data...</span></div>';
+  state.isLoading = true;
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading-bottom';
+  loadingDiv.innerHTML = '<div class="loading-spinner"></div><span class="loading-text">Memuat data...</span>';
+  listEl.appendChild(loadingDiv);
 
   const apiUrl = `https://archive.org/services/search/beta/page_production/?page_type=account_details&page_target=@16_i_gede_ananda_pradnyana&page_elements=[%22uploads%22]&hits_per_page=${state.hitsPerPage}&page=${page}&sort=publicdate:desc`;
   const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -104,16 +111,23 @@ async function loadJson(page = 1){
   });
 
   pageCache[page] = pageData;
-  state.data = pageData;
-  state.page = page;
+  state.allData = state.allData.concat(pageData);
+  state.currentPage = page;
   state.totalPages = Math.ceil(total / state.hitsPerPage);
+  state.hasMore = page < state.totalPages;
   state.isSearch = false;
 
-  render();
-  renderPagination();
+  listEl.removeChild(loadingDiv);
+  state.isLoading = false;
+  if (page === 1) {
+    render();
+  } else {
+    appendGroups(pageData);
+  }
 }
 
 async function loadAllJsonForSearch(query) {
+  state.isLoading = true;
   listEl.innerHTML = '<div class="list-group-item text-center"><div class="loading-spinner"></div><span class="loading-text">Memuat semua data untuk pencarian...</span></div>';
 
   const apiUrl = `https://archive.org/services/search/beta/page_production/?page_type=account_details&page_target=@16_i_gede_ananda_pradnyana&page_elements=[%22uploads%22]&hits_per_page=${state.hitsPerPage}&page=1&sort=publicdate:desc`;
@@ -159,32 +173,28 @@ async function loadAllJsonForSearch(query) {
     filteredData = allData.filter(it => (it.tanggal || '').toLowerCase().includes(query) || (it.url || '').toLowerCase().includes(query));
   }
 
-  state.data = filteredData;
-  state.page = 1;
+  state.allData = filteredData;
+  state.currentPage = 1;
   state.totalPages = Math.ceil(filteredData.length / state.hitsPerPage);
   state.isSearch = true;
   state.query = query;
+  state.hasMore = false; // No more loading in search mode
+  state.isLoading = false;
 
   render();
-  renderPagination();
 }
 
-// Helper: normalisasi tanggal agar "06-09-25" dan "06-09-2" dianggap sama (prefix 2 digit)
-function normalizeTanggal(tgl) {
-  // Ambil dua digit pertama (dd-mm), ignore hari ke berapa
-  const parts = tgl.split('-');
-  if (parts.length >= 2) return parts[0] + '-' + parts[1];
-  return tgl;
+// Helper: extract base date from title (e.g., "VOT-Denpasar_13-10-25" from "VOT-Denpasar_13-10-25-2.mp3")
+function extractBaseDate(title) {
+  const match = title.match(/VOT-Denpasar_(\d{2}-\d{2}-\d{2})/);
+  return match ? `VOT-Denpasar_${match[1]}` : title;
 }
 
 function render(){
   const q = document.getElementById('q').value.trim().toLowerCase();
-  let items = state.data.slice();
+  let items = state.allData.slice();
   if (state.isSearch) {
-    // data is already filtered, slice for pagination
-    const start = (state.page - 1) * state.hitsPerPage;
-    const end = start + state.hitsPerPage;
-    items = items.slice(start, end);
+    // data is already filtered, no pagination
   } else {
     // normal flow
     if(!state.sortDesc) items.reverse();
@@ -193,20 +203,18 @@ function render(){
     }
   }
 
-  // Grouping by tanggal mirip
+  // Grouping by full date (dd-mm-yy)
   const groups = {};
   const groupDates = {}; // simpan tanggal asli untuk sorting
   for(const it of items){
     const id = getIdentifierFromDetailsUrl(it.url);
     const tglRaw = it.publicdate ? formatDate(it.publicdate) : it.tanggal;
-    const tglNorm = tglRaw ? normalizeTanggal(tglRaw) : it.tanggal;
+    const tglNorm = tglRaw; // full dd-mm-yy
     if(!groups[tglNorm]) groups[tglNorm] = [];
     groups[tglNorm].push({ ...it, id, tglRaw });
-    // Ambil tanggal display (tglRaw terpanjang atau tanggal fallback)
-    let displayTanggal = tglRaw || it.tanggal;
-    // Simpan tanggal asli untuk sorting (ambil yang terpanjang)
-    if (!groupDates[tglNorm] || (displayTanggal.length > groupDates[tglNorm].length)) {
-      groupDates[tglNorm] = displayTanggal;
+    // Simpan tanggal asli untuk sorting
+    if (!groupDates[tglNorm]) {
+      groupDates[tglNorm] = tglRaw;
     }
   }
 
@@ -216,14 +224,12 @@ function render(){
     // Parse ke Date, fallback ke string jika gagal
     const da = groupDates[a];
     const db = groupDates[b];
-    // Format: dd-mm-yy atau dd-mm-y
+    // Format: dd-mm-yy
     function parseTgl(tgl) {
       const parts = tgl.split('-');
       if(parts.length === 3) {
-        // yy bisa 2 digit, tambahkan 20 di depan jika perlu
         let year = parts[2];
-        if(year.length === 1) year = '2025'; // fallback
-        else if(year.length === 2) year = '20' + year;
+        if(year.length === 2) year = '20' + year;
         return new Date(year, parseInt(parts[1])-1, parseInt(parts[0]));
       }
       return new Date(tgl);
@@ -239,7 +245,6 @@ function render(){
 
   if(items.length === 0){
     listEl.innerHTML = `<div class="list-group-item text-center">Tidak ada rekaman atau tidak cocok dengan pencarian.</div>`;
-    renderPagination(); // pastikan pagination tetap muncul
     return;
   }
 
@@ -247,11 +252,15 @@ function render(){
     const group = groups[tglNorm];
     let displayTanggal = groupDates[tglNorm];
 
+    // Container untuk grup tanggal
+    const container = document.createElement('div');
+    container.className = 'date-group-container';
+
     // Baris tanggal
     const dateRow = document.createElement('div');
     dateRow.className = 'date-group-header';
     dateRow.textContent = 'Tanggal: ' + displayTanggal;
-    listEl.appendChild(dateRow);
+    container.appendChild(dateRow);
 
     // Helper to extract datetime string from identifier for sorting
     function extractDateTimeFromId(id) {
@@ -311,75 +320,211 @@ function render(){
       row.appendChild(img);
       row.appendChild(meta);
       row.appendChild(playBtn);
-      listEl.appendChild(row);
+      container.appendChild(row);
+    }
+
+    listEl.appendChild(container);
+  }
+}
+
+function appendGroups(newItems) {
+  if (newItems.length === 0) return;
+
+  // Grouping by full date (dd-mm-yy)
+  const groups = {};
+  const groupDates = {};
+  for(const it of newItems){
+    const id = getIdentifierFromDetailsUrl(it.url);
+    const tglRaw = it.publicdate ? formatDate(it.publicdate) : it.tanggal;
+    const tglNorm = tglRaw;
+    if(!groups[tglNorm]) groups[tglNorm] = [];
+    groups[tglNorm].push({ ...it, id, tglRaw });
+    if (!groupDates[tglNorm]) {
+      groupDates[tglNorm] = tglRaw;
     }
   }
 
-  renderPagination(); // pastikan pagination tetap muncul di akhir render
+  // Sort group keys
+  let groupKeys = Object.keys(groups);
+  groupKeys.sort((a, b) => {
+    const da = groupDates[a];
+    const db = groupDates[b];
+    function parseTgl(tgl) {
+      const parts = tgl.split('-');
+      if(parts.length === 3) {
+        let year = parts[2];
+        if(year.length === 2) year = '20' + year;
+        return new Date(year, parseInt(parts[1])-1, parseInt(parts[0]));
+      }
+      return new Date(tgl);
+    }
+    const dateA = parseTgl(da);
+    const dateB = parseTgl(db);
+    return state.sortDesc ? dateB - dateA : dateA - dateB;
+  });
+
+  // Find last group date in current list
+  const existingHeaders = listEl.querySelectorAll('.date-group-header');
+  let lastGroupDate = '';
+  if (existingHeaders.length > 0) {
+    const lastHeader = existingHeaders[existingHeaders.length - 1];
+    lastGroupDate = lastHeader.textContent.replace('Tanggal: ', '');
+  }
+
+  for(const tglNorm of groupKeys){
+    const group = groups[tglNorm];
+    let displayTanggal = groupDates[tglNorm];
+
+    // Only add header if different from last
+    if (displayTanggal !== lastGroupDate) {
+      // Container untuk grup tanggal
+      const container = document.createElement('div');
+      container.className = 'date-group-container';
+
+      // Baris tanggal
+      const dateRow = document.createElement('div');
+      dateRow.className = 'date-group-header';
+      dateRow.textContent = 'Tanggal: ' + displayTanggal;
+      container.appendChild(dateRow);
+      lastGroupDate = displayTanggal;
+
+      // Sort items within group
+      function extractDateTimeFromId(id) {
+        if (!id) return '';
+        const match = id.match(/(\d{8}-\d{6})/);
+        return match ? match[1] : '';
+      }
+      group.sort((a,b) => {
+        const dtA = extractDateTimeFromId(a.id);
+        const dtB = extractDateTimeFromId(b.id);
+        return state.sortDesc ? dtB.localeCompare(dtA) : dtA.localeCompare(dtB);
+      });
+
+      for(const it of group){
+        const row = document.createElement('div');
+        row.className = 'list-group-item';
+
+        const img = document.createElement('img');
+        img.src = `https://archive.org/services/img/${it.id}`;
+        img.alt = 'Thumbnail';
+        img.style = 'width:60px; height:60px; margin-right:10px; object-fit:fill; border-radius:4px;';
+
+        const meta = document.createElement('div');
+        meta.className = 'list-meta';
+        meta.innerHTML = `<div class="title">${it.title}</div>`+
+                  `<div><span class="badge-id">${it.id || ''}</span>
+                  <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'btn btn-success';
+        playBtn.textContent = 'Putar';
+        playBtn.onclick = async () => {
+          if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+          row.parentNode.insertBefore(playerEl, row);
+          playerEl.hidden = false;
+          nowTitle.textContent = `${it.title}`;
+          nowSub.textContent = it.id ? it.id : '—';
+          audioEl.removeAttribute('src');
+          audioEl.load();
+          try{
+            const mp3 = it.id ? await resolveMp3Url(it.id) : null;
+            if(!mp3){
+              nowSub.textContent = 'File MP3 tidak ditemukan di item';
+              return;
+            }
+            audioEl.src = mp3;
+            audioEl.play().catch(()=>{});
+            nowSub.innerHTML = `<span>Memainkan: </span><code>${mp3.split('/').pop()}</code>`;
+          }catch(err){
+            nowSub.textContent = 'Gagal memuat audio: ' + err.message;
+          }
+        };
+
+        row.appendChild(img);
+        row.appendChild(meta);
+        row.appendChild(playBtn);
+        container.appendChild(row);
+      }
+
+      listEl.appendChild(container);
+    } else {
+      // If same date, append to existing container
+      const existingContainers = listEl.querySelectorAll('.date-group-container');
+      const lastContainer = existingContainers[existingContainers.length - 1];
+
+      // Sort items within group
+      function extractDateTimeFromId(id) {
+        if (!id) return '';
+        const match = id.match(/(\d{8}-\d{6})/);
+        return match ? match[1] : '';
+      }
+      group.sort((a,b) => {
+        const dtA = extractDateTimeFromId(a.id);
+        const dtB = extractDateTimeFromId(b.id);
+        return state.sortDesc ? dtB.localeCompare(dtA) : dtA.localeCompare(dtB);
+      });
+
+      for(const it of group){
+        const row = document.createElement('div');
+        row.className = 'list-group-item';
+
+        const img = document.createElement('img');
+        img.src = `https://archive.org/services/img/${it.id}`;
+        img.alt = 'Thumbnail';
+        img.style = 'width:60px; height:60px; margin-right:10px; object-fit:fill; border-radius:4px;';
+
+        const meta = document.createElement('div');
+        meta.className = 'list-meta';
+        meta.innerHTML = `<div class="title">${it.title}</div>`+
+                  `<div><span class="badge-id">${it.id || ''}</span>
+                  <a href="${it.url}" target="_blank">Buka di Archive.org</a></div>`;
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'btn btn-success';
+        playBtn.textContent = 'Putar';
+        playBtn.onclick = async () => {
+          if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+          row.parentNode.insertBefore(playerEl, row);
+          playerEl.hidden = false;
+          nowTitle.textContent = `${it.title}`;
+          nowSub.textContent = it.id ? it.id : '—';
+          audioEl.removeAttribute('src');
+          audioEl.load();
+          try{
+            const mp3 = it.id ? await resolveMp3Url(it.id) : null;
+            if(!mp3){
+              nowSub.textContent = 'File MP3 tidak ditemukan di item';
+              return;
+            }
+            audioEl.src = mp3;
+            audioEl.play().catch(()=>{});
+            nowSub.innerHTML = `<span>Memainkan: </span><code>${mp3.split('/').pop()}</code>`;
+          }catch(err){
+            nowSub.textContent = 'Gagal memuat audio: ' + err.message;
+          }
+        };
+
+        row.appendChild(img);
+        row.appendChild(meta);
+        row.appendChild(playBtn);
+        lastContainer.appendChild(row);
+      }
+    }
+  }
 }
 
-function renderPagination() {
-  // Selalu tampilkan pagination jika totalPages > 1
-  if (state.totalPages <= 1) {
-    paginationEl.innerHTML = '';
-    return;
-  }
-  paginationEl.innerHTML = `
-    <nav aria-label="Page navigation">
-      <ul class="pagination" style="margin:0; display:flex; align-items:center; gap:8px; justify-content:center;">
-        <li ${state.page === 1 ? 'class="disabled"' : ''} style="margin-right:8px;">
-          <a href="#" aria-label="Previous" id="prevPageBtn"><span aria-hidden="true">&laquo;</span></a>
-        </li>
-        <li>
-          <input type="text" pattern="[0-9]*" inputmode="numeric" id="pageInput" min="1" max="${state.totalPages}" value="${state.page}" class="page-input" style="width:50px; height:34px; padding:4px; border:1px solid #444; text-align:center; color:inherit;" title="Masukkan nomor halaman" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        </li>
-        <li style="padding:0 8px;">
-          <span> / ${state.totalPages}</span>
-        </li>
-        <li ${state.page === state.totalPages ? 'class="disabled"' : ''} style="margin-left:8px;">
-          <a href="#" aria-label="Next" id="nextPageBtn"><span aria-hidden="true">&raquo;</span></a>
-        </li>
-      </ul>
-    </nav>
-  `;
-  // Event tombol prev/next
-  const prevBtn = document.getElementById('prevPageBtn');
-  const nextBtn = document.getElementById('nextPageBtn');
-  const pageInput = document.getElementById('pageInput');
-
-  if (prevBtn) {
-    prevBtn.onclick = (e) => {
-      e.preventDefault();
-      if (state.page > 1) loadJson(state.page - 1).catch(err => {
-        listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
-        renderPagination();
-      });
-    };
-  }
-  if (nextBtn) {
-    nextBtn.onclick = (e) => {
-      e.preventDefault();
-      if (state.page < state.totalPages) loadJson(state.page + 1).catch(err => {
-        listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
-        renderPagination();
-      });
-    };
-  }
-  if (pageInput) {
-    pageInput.addEventListener('change', (e) => {
-      let val = parseInt(e.target.value);
-      if (isNaN(val) || val < 1) val = 1;
-      else if (val > state.totalPages) val = state.totalPages;
-      e.target.value = val;
-      if (val !== state.page) {
-        loadJson(val).catch(err => {
-          listEl.innerHTML = `<div class="list-group-item text-center">${err.message}</div>`;
-          renderPagination();
-        });
-      }
+// Scroll listener for lazy loading
+window.addEventListener('scroll', () => {
+  if (state.isLoading || !state.hasMore || state.isSearch) return;
+  const scrollY = window.scrollY;
+  const innerHeight = window.innerHeight;
+  const bodyScrollHeight = document.body.scrollHeight;
+  if (scrollY + innerHeight >= bodyScrollHeight - 100) {
+    loadJson(state.currentPage + 1).catch(err => {
+      listEl.innerHTML += `<div class="list-group-item text-center">${err.message}</div>`;
     });
   }
-}
+});
 
 // Remove input event listener on search input to prevent search on typing
 // document.getElementById('q').addEventListener('input', render);
@@ -390,11 +535,13 @@ document.querySelector('.search-btn').addEventListener('click', () => {
   // Clear previous list to prevent flooding
   listEl.innerHTML = '';
   pageCache = {}; // clear cache to force fresh fetch
-  state.page = 1;
+  state.allData = [];
+  state.currentPage = 1;
+  state.hasMore = true;
   if (query) {
     loadAllJsonForSearch(query);
   } else {
-    loadJson(state.page);
+    loadJson(state.currentPage);
   }
 });
 
@@ -405,11 +552,13 @@ document.getElementById('q').addEventListener('keydown', (event) => {
     // Clear previous list to prevent flooding
     listEl.innerHTML = '';
     pageCache = {}; // clear cache to force fresh fetch
-    state.page = 1;
+    state.allData = [];
+    state.currentPage = 1;
+    state.hasMore = true;
     if (query) {
       loadAllJsonForSearch(query);
     } else {
-      loadJson(state.page);
+      loadJson(state.currentPage);
     }
   }
 });
@@ -419,7 +568,7 @@ document.getElementById('sortBtn').addEventListener('click', () => {
   document.getElementById('sortBtn').textContent = 'Urut: ' + (state.sortDesc ? 'Terbaru' : 'Terlama');
   render();
 });
-document.getElementById('refreshBtn').addEventListener('click', () => { delete pageCache[state.page]; loadJson(state.page); });
+document.getElementById('refreshBtn').addEventListener('click', () => { delete pageCache[state.currentPage]; state.allData = []; state.currentPage = 1; state.hasMore = true; loadJson(state.currentPage); });
 
 // Initial load on page load
 loadJson().catch(err => {

@@ -28,25 +28,51 @@ if not EMAIL or not PASSWORD:
 def now_wita():
     return datetime.datetime.now(datetime.UTC).astimezone(WITA_TZ)
 
+import requests
+import time
+import datetime
+
+import requests
+import time
+import datetime
+
 def wait_for_stream(url):
     last_error = None
+    msg = "Menunggu stream"
+
     while True:
         try:
-            print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ! ] {msg}, coba lagi 1 detik...", end='\r', flush=True)
+            print(
+                f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m "
+                f"[ ! ] {msg}, coba lagi 1 detik...",
+                end='\r', flush=True
+            )
+
             resp = requests.head(url, timeout=10)
             if resp.status_code == 200:
-                print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ OK ] Stream tersedia {url}")
+                print(
+                    f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m "
+                    f"[ OK ] Stream tersedia {url}"
+                )
                 return
             else:
                 msg = f"Status {resp.status_code}"
                 if msg != last_error:
-                    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ! ] {msg}, coba lagi 1 detik...")
+                    print(
+                        f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m "
+                        f"[ ! ] {msg}, coba lagi 1 detik..."
+                    )
                     last_error = msg
+
         except Exception as e:
             msg = str(e)
             if msg != last_error:
-                print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ! ] Error: {msg}, coba lagi 1 detik...")
+                print(
+                    f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m "
+                    f"[ ! ] Error: {msg}, coba lagi 1 detik..."
+                )
                 last_error = msg
+
         time.sleep(0.5)
 
 def run_ffmpeg(url, suffix="", position=0):
@@ -145,7 +171,7 @@ def run_ffmpeg(url, suffix="", position=0):
 
         time.sleep(1)
 
-    print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Rekaman selesai: {filename}")
+    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Rekaman selesai: {filename}")
     if position > 0:
         delay = position * 10
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DELAY ] Menunggu {delay} detik sebelum upload...")
@@ -185,7 +211,7 @@ def main_recording():
     stream_url = "http://i.klikhost.com:8502/stream"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, args.suffix, args.position)
-    print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Semua tugas selesai.")
+    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Semua tugas selesai.")
     return True
 
 if __name__ == "__main__":
@@ -200,7 +226,7 @@ if __name__ == "__main__":
             break
 
         # Jalankan recording
-        print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
+        print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
         try:
             main_recording()
         except Exception as e:
@@ -209,11 +235,11 @@ if __name__ == "__main__":
         # Cek waktu lagi setelah recording selesai
         now = now_wita()
         if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
-            print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+            print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
             break
         else:
             print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
-            print("[ INFO ] Menunggu 0 detik sebelum restart...")
+            print("\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ INFO ] Menunggu 0 detik sebelum restart...")
             continue
 
-    print("\n[ END ] Program selesai.")
+    print("\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ END ] Program selesai.")
