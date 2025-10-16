@@ -53,7 +53,7 @@ const state = {
   sortDesc: true,
   currentPage: 1,
   totalPages: 1,
-  hitsPerPage: 10,
+  hitsPerPage: 25,
   query: '',
   isSearch: false,
   isLoading: false,
@@ -140,7 +140,7 @@ async function loadAllJsonForSearch(query) {
 
   let allHits = [...hits];
   const totalPages = Math.ceil(total / state.hitsPerPage);
-  const maxPages = Math.min(totalPages, 10); // Limit to 10 pages to avoid too many requests
+  const maxPages = Math.min(totalPages, 25);
 
   // Fetch remaining pages
   const promises = [];

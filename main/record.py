@@ -132,7 +132,10 @@ def run_ffmpeg(url, suffix="", position=0):
     def log_ffmpeg(proc):
         nonlocal last_sound_time
         for line in proc.stderr:
-            msg = "[FFMPEG] " + line.strip()
+            now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%H:%M:%S")
+            timestamp = f"\033[34m[{now}]\033[0m"
+            msg = f"{timestamp} [FFMPEG] {line.strip()}"
+            
             sys.stdout.write("\r" + msg + " " * 10)
             sys.stdout.flush()
 
@@ -239,7 +242,7 @@ if __name__ == "__main__":
             break
         else:
             print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
-            print("\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ INFO ] Menunggu 0 detik sebelum restart...")
+            print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ INFO ] Menunggu 0 detik sebelum restart...")
             continue
 
-    print("\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ END ] Program selesai.")
+    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ END ] Program selesai.")
