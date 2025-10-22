@@ -33,18 +33,31 @@ body { font-family: 'Open Sans', sans-serif; background-color: #f5f5f5; }
 }
 #list {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 16px;
 }
+
+/* tiap group menempati 2 kolom di desktop, 1 kolom di mobile */
 .date-group-container {
-  display: flex;
-  flex-direction: column;
-  min-width: 438px;
-  flex: 1 1 438px;
+  flex: 1 1 calc(50% - 16px);
+  min-width: 380px;
+  max-width: 48%;
   border: 1px solid #ddd;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Responsif - ubah jadi 1 kolom di layar kecil */
+@media (max-width: 900px) {
+  .date-group-container {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 100%;
+  }
 }
 .date-group-header {
   background: #e6f7fa;
