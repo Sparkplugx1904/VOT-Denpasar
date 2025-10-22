@@ -68,6 +68,7 @@ playerEl.className = 'player';
 playerEl.id = 'player';
 playerEl.hidden = true;
 playerEl.innerHTML = `
+  <button id="closePlayerBtn" class="close-btn" style="float:right; margin-bottom:5px;">&times;</button>
   <h4 id="nowTitle">—</h4>
   <p id="nowSub">Memuat pemutar…</p>
   <audio id="audio" controls preload="none" style="width:100%"></audio>
@@ -75,6 +76,66 @@ playerEl.innerHTML = `
 const audioEl = playerEl.querySelector('#audio');
 const nowTitle = playerEl.querySelector('#nowTitle');
 const nowSub = playerEl.querySelector('#nowSub');
+const closePlayerBtn = playerEl.querySelector('#closePlayerBtn');
+
+// Function to detect multi-column mode
+function isMultiColumnMode() {
+  return window.innerWidth > 767;
+}
+
+// Function to show player as toast
+function showPlayerAsToast() {
+  playerEl.classList.add('toast-player');
+  document.body.appendChild(playerEl);
+  playerEl.hidden = false;
+}
+
+// Function to hide player toast
+function hidePlayerToast() {
+  if (playerEl.parentNode === document.body) {
+    document.body.removeChild(playerEl);
+  }
+  playerEl.hidden = true;
+  playerEl.classList.remove('toast-player');
+}
+
+// Close button event
+closePlayerBtn.onclick = () => {
+  hidePlayerToast();
+};
+
+// Function to handle mode switching when window resizes
+function handleModeSwitch() {
+  if (playerEl.hidden) return; // No player visible
+
+  const isCurrentlyToast = playerEl.classList.contains('toast-player');
+  const shouldBeToast = isMultiColumnMode();
+
+  if (isCurrentlyToast && !shouldBeToast) {
+    // Switch from toast to inline
+    hidePlayerToast();
+    // Find the currently playing item and insert above it
+    const playingId = nowSub.textContent;
+    if (playingId && playingId !== '—') {
+      const rows = document.querySelectorAll('.list-group-item');
+      for (const row of rows) {
+        const badge = row.querySelector('.badge-id');
+        if (badge && badge.textContent === playingId) {
+          row.parentNode.insertBefore(playerEl, row);
+          playerEl.hidden = false;
+          break;
+        }
+      }
+    }
+  } else if (!isCurrentlyToast && shouldBeToast) {
+    // Switch from inline to toast
+    if (playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+    showPlayerAsToast();
+  }
+}
+
+// Add window resize listener
+window.addEventListener('resize', handleModeSwitch);
 
 async function loadJson(page = 1){
   if(pageCache[page]){
@@ -140,7 +201,7 @@ async function loadAllJsonForSearch(query) {
 
   let allHits = [...hits];
   const totalPages = Math.ceil(total / state.hitsPerPage);
-  const maxPages = Math.min(totalPages, 25);
+  const maxPages = Math.min(totalPages, 100);
 
   // Fetch remaining pages
   const promises = [];
@@ -296,9 +357,16 @@ function render(){
       playBtn.className = 'btn btn-success';
       playBtn.textContent = 'Putar';
       playBtn.onclick = async () => {
-        if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
-        row.parentNode.insertBefore(playerEl, row);
-        playerEl.hidden = false;
+        if (isMultiColumnMode()) {
+          // Multi-column: use toast
+          hidePlayerToast(); // Hide any existing toast
+          showPlayerAsToast();
+        } else {
+          // Single-column: insert above row
+          if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+          row.parentNode.insertBefore(playerEl, row);
+          playerEl.hidden = false;
+        }
         nowTitle.textContent = `${it.title}`;
         nowSub.textContent = it.id ? it.id : '—';
         audioEl.removeAttribute('src');
@@ -483,9 +551,16 @@ function appendGroups(newItems) {
         playBtn.className = 'btn btn-success';
         playBtn.textContent = 'Putar';
         playBtn.onclick = async () => {
-          if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
-          row.parentNode.insertBefore(playerEl, row);
-          playerEl.hidden = false;
+          if (isMultiColumnMode()) {
+            // Multi-column: use toast
+            hidePlayerToast(); // Hide any existing toast
+            showPlayerAsToast();
+          } else {
+            // Single-column: insert above row
+            if(playerEl.parentNode) playerEl.parentNode.removeChild(playerEl);
+            row.parentNode.insertBefore(playerEl, row);
+            playerEl.hidden = false;
+          }
           nowTitle.textContent = `${it.title}`;
           nowSub.textContent = it.id ? it.id : '—';
           audioEl.removeAttribute('src');
@@ -519,7 +594,9 @@ window.addEventListener('scroll', () => {
   const scrollY = window.scrollY;
   const innerHeight = window.innerHeight;
   const bodyScrollHeight = document.body.scrollHeight;
-  if (scrollY + innerHeight >= bodyScrollHeight - 100) {
+  // Adjust threshold for smaller screens
+  const threshold = innerHeight < 600 ? 50 : 100;
+  if (scrollY + innerHeight >= bodyScrollHeight - threshold) {
     loadJson(state.currentPage + 1).catch(err => {
       listEl.innerHTML += `<div class="list-group-item text-center">${err.message}</div>`;
     });
