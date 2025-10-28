@@ -73,7 +73,7 @@ def wait_for_stream(url):
                 )
                 last_error = msg
 
-        time.sleep(0.5)
+        time.sleep(1)
 
 def run_ffmpeg(url, suffix="", position=0):
     date_str = now_wita().strftime("%d-%m-%y")
