@@ -17,10 +17,10 @@ jobs:
         env:
           MY_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/main/record.py
-          curl -L -o ffmpeg https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffmpeg
-          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/VOT-Denpasar/main/requirements.txt
-          curl -L -o ffprobe https://github.com/Sparkplugx1904/VOT-Denpasar/raw/refs/heads/main/bin/ffprobe
+          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/record.py
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffmpeg
+          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/requirements.txt
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffprobe
 
       - name: Setup Python
         uses: actions/setup-python@v5
