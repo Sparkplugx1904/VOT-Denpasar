@@ -19,13 +19,13 @@
 
 <p align="center">
   <a href="https://madyapadma-online.com/" target="_blank">
-    <img src="https://github.com/Sparkplugx1904/VOT-Denpasar/blob/main/assets/mptv_banner.png?raw=true" alt="VOT-Radio Denpasar" width="/>
+    <img src="https://github.com/Sparkplugx1904/voiceoftrisma/blob/main/assets/mptv_banner.png?raw=true" alt="VOT-Radio Denpasar" width="/>
   </a>
 </p>
 
 <p align="center">
   <!-- Badge untuk Archive -->
-  <a href="https://sparkplugx1904.github.io/VOT-Denpasar/" target="_blank">
+  <a href="https://sparkplugx1904.github.io/voiceoftrisma/" target="_blank">
     <img src="https://img.shields.io/badge/Dengarkan%20Arsip%20Disini-blue?style=for-the-badge&logo=github&logoColor=white" alt="Listen Archive"/>
   </a>
 
@@ -45,7 +45,7 @@
   </a>
 
   <!-- Badge untuk About Madyapadma dengan tanda seru di lingkaran -->
-  <a href="https://github.com/Sparkplugx1904/VOT-Denpasar/blob/main/ABOUT%20MADYAPADMA.md" target="_blank">
+  <a href="https://github.com/Sparkplugx1904/voiceoftrisma/blob/main/ABOUT%20MADYAPADMA.md" target="_blank">
     <img src="https://img.shields.io/badge/About%20Madyapadma-lightgray?style=for-the-badge" alt="About Madyapadma"/>
   </a>
 </p>
@@ -72,7 +72,7 @@ Kami berkomitmen untuk terus meningkatkan fitur-fitur ini, menciptakan pengalama
 Mengakses arsip siaran VOT-Radio Denpasar sangatlah mudah dan cepat. Ikuti langkah-langkah berikut untuk mulai menjelajahi koleksi kami:
 
 1. Kunjungi halaman arsip resmi:  
-   **[VOT-Radio Denpasar Archive](https://sparkplugx1904.github.io/VOT-Denpasar/)**
+   **[VOT-Radio Denpasar Archive](https://sparkplugx1904.github.io/voiceoftrisma/)**
 2. Pilih tanggal rekaman yang diinginkan dari daftar yang tersedia.
 3. Putar rekaman langsung di browser Anda, atau akses tautan Archive.org untuk detail lebih lanjut dan opsi unduh.
 
