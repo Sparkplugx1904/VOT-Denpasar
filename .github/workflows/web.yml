@@ -1,0 +1,40 @@
+name: Auto Deploy (Curl Method)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Git identity
+        run: |
+          git config --global user.name "mp@bot"
+          git config --global user.email "mp@bot@users.noreply.github.com"
+
+      - name: Clone web repo
+        run: |
+          git clone https://x-access-token:${{ secrets.WEB_TOKEN }}@github.com/voiceoftrisma/voiceoftrisma.github.io.git web
+
+      - name: Clear old content
+        run: |
+          cd web
+          rm -rf ./*
+
+      - name: Download new files via curl
+        run: |
+          cd web
+          curl -L -o index.html https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/index.html
+          curl -L -o script.js https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/script.js
+          curl -L -o style.css https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/style.css
+
+      - name: Commit and push
+        run: |
+          cd web
+          git add .
+          git commit -m "Auto deploy by mp@bot at $(date)" || echo "No changes"
+          git push origin main
