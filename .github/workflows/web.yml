@@ -33,6 +33,7 @@ jobs:
           curl -L -o style.css https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/style.css
           curl -L -o LICENSE https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/LICENSE
           curl -L -o README.md https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/README.md
+          curl -L -o sitemap.xml https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/sitemap.xml
 
       - name: Commit and push
         run: |
