@@ -25,7 +25,7 @@
 
 <p align="center">
   <!-- Badge untuk Archive -->
-  <a href="https://sparkplugx1904.github.io/voiceoftrisma/" target="_blank">
+  <a href="https://voiceoftrisma.github.io/" target="_blank">
     <img src="https://img.shields.io/badge/Dengarkan%20Arsip%20Disini-blue?style=for-the-badge&logo=github&logoColor=white" alt="Listen Archive"/>
   </a>
 
@@ -72,7 +72,7 @@ Kami berkomitmen untuk terus meningkatkan fitur-fitur ini, menciptakan pengalama
 Mengakses arsip siaran VOT-Radio Denpasar sangatlah mudah dan cepat. Ikuti langkah-langkah berikut untuk mulai menjelajahi koleksi kami:
 
 1. Kunjungi halaman arsip resmi:  
-   **[VOT-Radio Denpasar Archive](https://sparkplugx1904.github.io/voiceoftrisma/)**
+   **[VOT-Radio Denpasar Archive](https://voiceoftrisma.github.io/)**
 2. Pilih tanggal rekaman yang diinginkan dari daftar yang tersedia.
 3. Putar rekaman langsung di browser Anda, atau akses tautan Archive.org untuk detail lebih lanjut dan opsi unduh.
 
