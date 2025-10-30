@@ -14,7 +14,7 @@ jobs:
       - name: Setup Git identity
         run: |
           git config --global user.name "mp@bot"
-          git config --global user.email "mp@bot@users.noreply.github.com"
+          git config --global user.email "mp@bot@noreply.github.com"
 
       - name: Clone web repo
         run: |
@@ -31,6 +31,8 @@ jobs:
           curl -L -o index.html https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/index.html
           curl -L -o script.js https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/script.js
           curl -L -o style.css https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/template/0/style.css
+          curl -L -o LICENSE https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/LICENSE
+          curl -L -o README.md https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/README.md
 
       - name: Commit and push
         run: |
