@@ -30,7 +30,7 @@ jobs:
           echo "URL: $AUDIO_URL"
           echo "Model: $MODEL_NAME"
 
-          python ./main/transcript.py "$AUDIO_URL" "$MODEL_NAME"
+          python transcript.py "$AUDIO_URL" "$MODEL_NAME"
 
       - name: Upload hasil transkripsi
         uses: actions/upload-artifact@v4
