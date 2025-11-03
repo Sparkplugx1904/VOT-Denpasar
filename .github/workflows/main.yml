@@ -38,6 +38,6 @@ jobs:
 
       - name: Run recorder
         env:
-          MY_ACC: ${{ secrets.MY_ACC }}
-          MY_PASS: ${{ secrets.MY_PASS }}
+          MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
+          MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
         run: python record.py ${{ matrix.suffix }}

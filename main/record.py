@@ -17,12 +17,12 @@ os.system("chmod +x ffmpeg ffprobe")
 WITA_OFFSET = datetime.timedelta(hours=8)
 WITA_TZ = datetime.timezone(WITA_OFFSET)
 
-# Ambil email dan password dari environment variable (GitHub Secrets)
-EMAIL = os.environ.get("MY_ACC")
-PASSWORD = os.environ.get("MY_PASS")
+# Ambil MY_ACCESS_KEY dan MY_SECRET_KEY dari environment variable (GitHub Secrets)
+MY_ACCESS_KEY = os.environ.get("MY_ACCESS_KEY")
+MY_SECRET_KEY = os.environ.get("MY_SECRET_KEY")
 
-if not EMAIL or not PASSWORD:
-    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ERROR ] GitHub secrets MY_ACC atau MY_PASS belum diset!")
+if not MY_ACCESS_KEY or not MY_SECRET_KEY:
+    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ERROR ] GitHub secrets MY_ACCESS_KEY atau MY_SECRET_KEY belum diset!")
     sys.exit(1)
 
 def now_wita():
@@ -194,8 +194,8 @@ def upload_to_archive(file_path):
                    'title': os.path.basename(file_path),
                    'creator': 'VOT Radio Denpasar'
                },
-               access_key=EMAIL,
-               secret_key=PASSWORD,
+               access_key=MY_ACCESS_KEY,
+               secret_key=MY_SECRET_KEY,
                verbose=True)
         archive_url = f"https://archive.org/details/{item_identifier}"
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Upload berhasil: {archive_url}")
