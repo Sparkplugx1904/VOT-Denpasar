@@ -64,7 +64,7 @@
 Proyek ini menawarkan serangkaian fitur canggih yang dirancang untuk memberikan pengalaman yang mulus dan menarik bagi pengguna:
 
 - **Rekaman Otomatis Harian**: Sistem cerdas yang merekam siaran VOT-Radio Denpasar setiap hari, memastikan tidak ada momen penting yang terlewat.
-- **Penyimpanan Jangka Panjang di Archive.org**: Semua rekaman diunggah secara otomatis ke Archive.org, platform terpercaya untuk preservasi digital.
+- **Penyimpanan Jangka Panjang di Archive.org**: Semua rekaman diunggah secara otomatis ke [Archive.org](https://archive.org/details/@16_i_gede_ananda_pradnyana), platform terpercaya untuk preservasi digital.
 - **Log JSON Dinamis**: Daftar rekaman yang selalu diperbarui dengan tautan arsip, memudahkan navigasi dan akses.
 - **Halaman Web Interaktif**: Antarmuka modern yang memungkinkan pemutaran langsung dari browser, dengan fitur cek stream dan sistem reconnect untuk koneksi yang stabil.
 - **Akses Langsung ke Gudang Arsip**: URL langsung ke setiap rekaman di Archive.org, memberikan fleksibilitas maksimal bagi pengguna untuk menjelajahi seluruh koleksi.

@@ -1,0 +1,45 @@
+import whisper
+from pathlib import Path
+import requests
+import sys
+
+# Pastikan ada argumen URL
+if len(sys.argv) < 2:
+    print("Usage: python transcript.py <audio_url>")
+    sys.exit(1)
+
+# Ambil URL dari argumen
+url = sys.argv[1]
+audio_path = Path(url.split("/")[-1])
+
+# Pilih model ringan agar cepat
+model_name = "small"
+
+print(f"Memuat model lokal: {model_name}")
+model = whisper.load_model(model_name)
+
+# Unduh file jika belum ada
+if not audio_path.exists():
+    print(f"Mengunduh audio dari: {url}")
+    response = requests.get(url)
+    audio_path.write_bytes(response.content)
+    print("Selesai mengunduh:", audio_path)
+else:
+    print("File sudah ada:", audio_path)
+
+# Proses transkripsi
+print("Mulai transkripsi lokal... (ini bisa butuh waktu beberapa menit)")
+result = model.transcribe(str(audio_path), language="id")
+
+print("Transkripsi selesai!")
+
+# Simpan hasil ke file teks
+output_txt = audio_path.with_suffix(".txt")
+with open(output_txt, "w", encoding="utf-8") as f:
+    f.write(result["text"])
+
+print("Hasil transkripsi disimpan ke:", output_txt)
+
+# Tampilkan hasil ke terminal
+print("\n=== HASIL TRANSKRIPSI ===\n")
+print(result["text"])

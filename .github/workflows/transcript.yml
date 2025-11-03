@@ -1,0 +1,39 @@
+name: Transcribe Audio (Auto)
+
+on:
+  workflow_dispatch:  # Masih bisa dijalankan manual dari tab Actions
+
+jobs:
+  transcribe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Setup
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai-whisper requests torch numpy tqdm ffmpeg-python
+          curl -L -o transcript.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/transcript.py
+
+      - name: Jalankan transkripsi otomatis
+        run: |
+          # ==== Bagian hardcoded ====
+          AUDIO_URL="https://archive.org/download/vot-denpasar-20251101-183024/VOT-Denpasar_01-11-25-2.mp3"
+          MODEL_NAME="small"
+          # ===========================
+
+          echo "Menjalankan transkripsi otomatis:"
+          echo "URL: $AUDIO_URL"
+          echo "Model: $MODEL_NAME"
+
+          python ./main/transcript.py "$AUDIO_URL" "$MODEL_NAME"
+
+      - name: Upload hasil transkripsi
+        uses: actions/upload-artifact@v4
+        with:
+          name: hasil-transkrip
+          path: "*.txt"
