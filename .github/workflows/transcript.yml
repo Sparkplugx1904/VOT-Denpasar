@@ -19,11 +19,12 @@ jobs:
           pip install openai-whisper requests torch numpy tqdm ffmpeg-python
           curl -L -o transcript.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/transcript.py
           sudo apt-get update && sudo apt-get install -y ffmpeg
+          
       - name: Jalankan transkripsi otomatis
         run: |
           # ==== Bagian hardcoded ====
           AUDIO_URL="https://archive.org/download/vot-denpasar-20251101-183024/VOT-Denpasar_01-11-25-2.mp3"
-          MODEL_NAME="small"
+          MODEL_NAME="medium"
           # ===========================
 
           echo "Menjalankan transkripsi otomatis:"
