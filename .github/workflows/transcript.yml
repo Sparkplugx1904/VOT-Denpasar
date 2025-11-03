@@ -18,16 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install openai-whisper requests torch numpy tqdm ffmpeg-python
           curl -L -o transcript.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/transcript.py
-          curl -L -o ffmpeg https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffmpeg
-          curl -L -o ffprobe https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffprobe
-
-      - name: Verify FFmpeg
-        run: |
-          export PATH="$PWD:$PATH" 
-          chmod +x ./ffmpeg ./ffprobe
-          ./ffmpeg -version
-          ./ffprobe -version
-
+          sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Jalankan transkripsi otomatis
         run: |
           # ==== Bagian hardcoded ====
