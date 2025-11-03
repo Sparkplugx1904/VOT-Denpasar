@@ -23,6 +23,7 @@ jobs:
 
       - name: Verify FFmpeg
         run: |
+          export PATH="$PWD:$PATH" 
           chmod +x ./ffmpeg ./ffprobe
           ./ffmpeg -version
           ./ffprobe -version
