@@ -2,18 +2,69 @@ import whisper
 from pathlib import Path
 import requests
 import sys
+import torchaudio
+from pydub import AudioSegment
+import webrtcvad
+import numpy as np
+import tempfile
 
-# Pastikan ada minimal 1 argumen (URL)
+# -------------------------
+# Fungsi bantu VAD
+# -------------------------
+def vad_split(audio_path, aggressiveness=3, sample_rate=16000):
+    """
+    Memotong audio menjadi segmen yang hanya mengandung suara manusia.
+    - aggressiveness: 0-3 (3 = paling agresif menghilangkan noise)
+    """
+    audio, sr = torchaudio.load(audio_path)
+    if sr != sample_rate:
+        audio = torchaudio.transforms.Resample(sr, sample_rate)(audio)
+        sr = sample_rate
+
+    # Mono audio
+    if audio.shape[0] > 1:
+        audio = torch.mean(audio, dim=0, keepdim=True)
+    audio = audio.squeeze().numpy()
+
+    # Konversi ke PCM16
+    audio_pcm16 = (audio * 32768).astype(np.int16)
+
+    vad = webrtcvad.Vad(aggressiveness)
+    frame_duration = 30  # ms
+    frame_size = int(sr * frame_duration / 1000)
+    
+    segments = []
+    start = 0
+    for i in range(0, len(audio_pcm16), frame_size):
+        frame = audio_pcm16[i:i+frame_size].tobytes()
+        if len(frame) < frame_size*2:  # PCM16 = 2 byte
+            break
+        if vad.is_speech(frame, sr):
+            segments.append(audio_pcm16[i:i+frame_size])
+        else:
+            if start < i:
+                start = i
+
+    if len(segments) == 0:
+        return audio_path  # fallback jika VAD gagal
+    # Gabungkan kembali ke audio
+    vad_audio = np.concatenate(segments).astype(np.int16)
+    # Simpan sementara
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    torchaudio.save(tmp_file.name, torch.from_numpy(vad_audio).unsqueeze(0), sample_rate)
+    return tmp_file.name
+
+# -------------------------
+# Main script
+# -------------------------
+
 if len(sys.argv) < 2:
     print("Usage: python transcript.py <audio_url> [model_name]")
     print("Example: python transcript.py 'https://example.com/audio.mp3' small")
     sys.exit(1)
 
-# Ambil URL dan model dari argumen
 url = sys.argv[1]
 model_name = sys.argv[2] if len(sys.argv) >= 3 else "small"
-
-# File audio akan disimpan berdasarkan nama dari URL
 audio_path = Path(url.split("/")[-1])
 
 print(f"Memuat model lokal: {model_name}")
@@ -32,17 +83,25 @@ if not audio_path.exists():
 else:
     print("File sudah ada:", audio_path)
 
-# Proses transkripsi
+# Proses VAD
+print("Memproses VAD untuk memfilter suara manusia...")
+vad_audio_path = vad_split(str(audio_path))
+
+# Transkripsi
 print("Mulai transkripsi lokal... (ini bisa butuh waktu beberapa menit)")
 try:
-    result = model.transcribe(str(audio_path), language="id")
+    result = model.transcribe(
+        str(vad_audio_path),
+        language="id",
+        condition_on_previous_text=False  # agar output tidak berulang
+    )
 except Exception as e:
     print(f"[ ! ] Terjadi kesalahan saat transkripsi: {e}")
     sys.exit(1)
 
 print("Transkripsi selesai!")
 
-# Simpan hasil ke file teks
+# Simpan hasil
 output_txt = audio_path.with_suffix(".txt")
 with open(output_txt, "w", encoding="utf-8") as f:
     f.write(result["text"])
@@ -51,27 +110,15 @@ print("Hasil transkripsi disimpan ke:", output_txt)
 
 # Tampilkan hasil ke terminal
 print("\n=== HASIL TRANSKRIPSI ===\n")
-
 text = result["text"]
 max_len = 1024
-
-# Selama masih ada teks yang tersisa
 while len(text) > 0:
-    # Jika sisa teks masih pendek, cetak dan hentikan
     if len(text) <= max_len:
         print(text)
         break
-
-    # Jika panjang lebih dari 1024, cari spasi terakhir sebelum batas
     split_index = text.rfind(" ", 0, max_len)
-
-    # Jika tidak ada spasi, paksa potong di 1024
     if split_index == -1:
         split_index = max_len
-
-    # Ambil bagian pertama dan cetak
     chunk = text[:split_index].strip()
     print(chunk)
-
-    # Hapus bagian yang sudah dicetak dari teks
     text = text[split_index:].strip()
