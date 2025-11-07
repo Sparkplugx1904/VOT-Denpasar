@@ -86,8 +86,19 @@ jobs:
           cd ..
           rm -rf temp_whisper
 
-      - name: Setup FFmpeg
+      - name: Setup FFmpeg (Try 1)
         uses: FedericoCarboni/setup-ffmpeg@v3
+        continue-on-error: true
+
+      - name: Setup FFmpeg (Try 2)
+        if: ${{ failure() }}
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        continue-on-error: true
+
+      - name: Setup FFmpeg (Try 3)
+        if: ${{ failure() }}
+        uses: FedericoCarboni/setup-ffmpeg@v3
+
 
       - name: Install dependencies
         run: pip install requests pydub internetarchive
