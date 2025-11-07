@@ -1,0 +1,118 @@
+name: Record and Transcribe VOT
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * *"   # Tiap hari jam 05:00 UTC (~13:00 WITA)
+
+jobs:
+  record:
+    name: 🎙️ Record Stream and Upload
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suffix: ["-s 0 -p 0", "-s 1 -p 1", "-s 2 -p 2"]
+
+    steps:
+      - name: Download Python recorder & FFmpeg
+        run: |
+          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/record.py
+          curl -L -o ffmpeg https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffmpeg
+          curl -L -o ffprobe https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffprobe
+          curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/requirements.txt
+          chmod +x ffmpeg ffprobe
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run recorder
+        env:
+          MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
+          MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
+        run: |
+          mkdir -p recordings
+          python3 record.py ${{ matrix.suffix }}
+
+      - name: Upload recording artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vot-recording
+          path: recordings/
+
+      - name: Save archive URL
+        run: |
+          grep "https://archive.org/details/" <(cat recordings/* | strings) > archive_url.txt || echo "https://archive.org/details/UNKNOWN" > archive_url.txt
+        continue-on-error: true
+
+      - name: Upload archive URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-url
+          path: archive_url.txt
+
+  transcribe:
+    name: 🧠 Transcribe and Push to Archive
+    runs-on: ubuntu-latest
+    needs: record
+
+    steps:
+      - name: Download recording artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vot-recording
+          path: recordings/
+
+      - name: Download archive URL
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-url
+          path: .
+
+      - name: Get archive URL variable
+        id: get_url
+        run: echo "archive_url=$(cat archive_url.txt)" >> $GITHUB_ENV
+
+      - name: Clone Whisper-CPP (tanpa dotfiles)
+        run: |
+          git clone https://github.com/Sparkplugx1904/Whisper-CPP.git temp_whisper
+          cd temp_whisper
+          shopt -s extglob
+          mv !(.?*) ../
+          cd ..
+          rm -rf temp_whisper
+
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+
+      - name: Install dependencies
+        run: pip install requests pydub internetarchive
+
+      - name: Transcribe audio
+        run: |
+          audio_file=$(ls recordings/*.mp3 | head -n 1)
+          echo "[ INFO ] Transcribing $audio_file..."
+          python3 -u transcriptor_cpp.py "$audio_file" medium
+
+      - name: Upload transcript artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vot-transcript
+          path: transcripts/
+
+      - name: Push transcript to Archive.org
+        env:
+          MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
+          MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
+          ARCHIVE_URL: ${{ env.archive_url }}
+        run: |
+          item_id=$(basename "$ARCHIVE_URL")
+          echo "[ INFO ] Uploading transcript to $ARCHIVE_URL..."
+          ia upload "$item_id" transcripts/ --retries 3 \
+            --metadata="subject:Transcription" \
+            --metadata="description:Auto transcription added by GitHub Actions" \
+            --access-key "$MY_ACCESS_KEY" --secret-key "$MY_SECRET_KEY"
