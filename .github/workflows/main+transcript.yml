@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["-s 0 -p 0", "-s 1 -p 1", "-s 2 -p 2"]
+        suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
 
     steps:
       - name: Download Python recorder & FFmpeg
