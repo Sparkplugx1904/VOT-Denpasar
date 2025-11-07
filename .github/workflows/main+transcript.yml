@@ -38,22 +38,21 @@ jobs:
           mkdir -p recordings
           python3 record.py ${{ matrix.suffix }}
 
-      - name: Upload recording artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vot-recording
-          path: recordings/
-
-      - name: Save archive URL
+      - name: Save archive URL (with fallback)
         run: |
           grep "https://archive.org/details/" <(cat recordings/* | strings) > archive_url.txt || echo "https://archive.org/details/UNKNOWN" > archive_url.txt
-        continue-on-error: true
 
       - name: Upload archive URL
         uses: actions/upload-artifact@v4
         with:
           name: archive-url
           path: archive_url.txt
+
+      - name: Upload recording artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vot-recording
+          path: recordings/
 
   transcribe:
     name: 🧠 Transcribe and Push to Archive
@@ -86,19 +85,18 @@ jobs:
           cd ..
           rm -rf temp_whisper
 
-      - name: Setup FFmpeg (Try 1)
+      - name: Setup FFmpeg (retry up to 3x)
         uses: FedericoCarboni/setup-ffmpeg@v3
         continue-on-error: true
 
-      - name: Setup FFmpeg (Try 2)
+      - name: Setup FFmpeg (retry 2)
         if: ${{ failure() }}
         uses: FedericoCarboni/setup-ffmpeg@v3
         continue-on-error: true
 
-      - name: Setup FFmpeg (Try 3)
+      - name: Setup FFmpeg (retry 3)
         if: ${{ failure() }}
         uses: FedericoCarboni/setup-ffmpeg@v3
-
 
       - name: Install dependencies
         run: pip install requests pydub internetarchive

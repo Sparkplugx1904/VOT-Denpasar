@@ -71,7 +71,6 @@ def run_ffmpeg(url, suffix="", position=0):
     date_str = now_wita().strftime("%d-%m-%y")
     os.makedirs("recordings", exist_ok=True)
 
-    # Deteksi codec audio stream
     probe_cmd = [
         "./ffprobe", "-v", "error", "-select_streams", "a:0",
         "-show_entries", "stream=codec_name",
@@ -98,10 +97,10 @@ def run_ffmpeg(url, suffix="", position=0):
             "-reconnect", "1",
             "-reconnect_at_eof", "1",
             "-reconnect_streamed", "1",
-            "-reconnect_delay_max", "0",             # reconnect segera tanpa delay
-            "-reconnect_on_network_error", "1",      # retry jika jaringan putus
-            "-reconnect_on_http_error", "4xx,5xx",   # retry jika error HTTP
-            "-timeout", "5000000",                   # timeout koneksi cepat
+            "-reconnect_delay_max", "0",
+            "-reconnect_on_network_error", "1",
+            "-reconnect_on_http_error", "4xx,5xx",
+            "-timeout", "5000000",
             "-i", url,
             "-c", "copy",
             "-metadata", f"title=VOT Denpasar {date_str}",
@@ -110,13 +109,7 @@ def run_ffmpeg(url, suffix="", position=0):
             filename
         ]
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Mulai rekaman ke {filename}")
-        return subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
-        )
+        return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
     process = start_ffmpeg()
     last_sound_time = now_wita()
@@ -127,10 +120,8 @@ def run_ffmpeg(url, suffix="", position=0):
             now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%H:%M:%S")
             timestamp = f"\033[34m[{now}]\033[0m"
             msg = f"{timestamp} [FFMPEG] {line.strip()}"
-            
             sys.stdout.write("\r" + msg + " " * 10)
             sys.stdout.flush()
-
             if "silence_end" in line:
                 last_sound_time = now_wita()
         print()
@@ -140,7 +131,6 @@ def run_ffmpeg(url, suffix="", position=0):
     while True:
         now = now_wita()
 
-        # cut-off otomatis jam 18:30 WITA
         if now.hour == 18 and now.minute >= 30:
             print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
             process.send_signal(signal.SIGINT)
@@ -150,11 +140,10 @@ def run_ffmpeg(url, suffix="", position=0):
                 process.kill()
             break
 
-        # kalau ffmpeg mati total → tunggu max 10 menit (biar tau bener-bener gagal reconnect)
         if process.poll() is not None:
             print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ LOST ] ffmpeg berhenti, menunggu auto-reconnect max 10 menit...")
             wait_start = time.time()
-            while time.time() - wait_start < 600:  # 10 menit
+            while time.time() - wait_start < 600:
                 if process.poll() is None:
                     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ OK ] ffmpeg berhasil reconnect sendiri.")
                     break
@@ -171,9 +160,13 @@ def run_ffmpeg(url, suffix="", position=0):
         delay = position * 10
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DELAY ] Menunggu {delay} detik sebelum upload...")
         time.sleep(delay)
+
     archive_url = upload_to_archive(filename)
     if archive_url:
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ARCHIVE ] File tersedia di {archive_url}")
+        write_archive_url(archive_url)
+    else:
+        write_archive_url(None)
 
 def upload_to_archive(file_path):
     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ UPLOAD ] Mulai upload {file_path} ke archive.org...")
