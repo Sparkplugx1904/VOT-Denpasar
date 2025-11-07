@@ -28,14 +28,6 @@ if not MY_ACCESS_KEY or not MY_SECRET_KEY:
 def now_wita():
     return datetime.datetime.now(datetime.UTC).astimezone(WITA_TZ)
 
-import requests
-import time
-import datetime
-
-import requests
-import time
-import datetime
-
 def wait_for_stream(url):
     last_error = None
     msg = "Menunggu stream"
