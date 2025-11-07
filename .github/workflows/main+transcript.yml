@@ -42,17 +42,33 @@ jobs:
         run: |
           grep "https://archive.org/details/" <(cat recordings/* | strings) > archive_url.txt || echo "https://archive.org/details/UNKNOWN" > archive_url.txt
 
-      - name: Upload archive URL
-        uses: actions/upload-artifact@v4
-        with:
-          name: archive-url
-          path: archive_url.txt
+      # Buat nama artifact aman dari spasi
+      - name: Prepare safe artifact name
+        id: sanitize
+        run: |
+          safe_name=$(echo "${{ matrix.suffix }}" | tr ' ' '_')
+          echo "safe_name=$safe_name" >> $GITHUB_ENV
 
+      # Upload archive URL (retry 3x)
+      - name: Upload archive URL
+        run: |
+          for i in {1..3}; do
+            echo "[ Attempt $i ] Uploading archive URL..."
+            gh run upload-artifact "archive-url-${{ env.safe_name }}" archive_url.txt && break || sleep 3
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload recording artifact (retry 3x)
       - name: Upload recording artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vot-recording
-          path: recordings/
+        run: |
+          for i in {1..3}; do
+            echo "[ Attempt $i ] Uploading recordings..."
+            gh run upload-artifact "vot-recording-${{ env.safe_name }}" recordings/ && break || sleep 3
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
   transcribe:
     name: 🧠 Transcribe and Push to Archive
@@ -60,17 +76,19 @@ jobs:
     needs: record
 
     steps:
-      - name: Download recording artifact
+      - name: Download all recording artifacts
         uses: actions/download-artifact@v4
         with:
-          name: vot-recording
+          pattern: vot-recording-*
           path: recordings/
+          merge-multiple: true
 
-      - name: Download archive URL
+      - name: Download all archive URL artifacts
         uses: actions/download-artifact@v4
         with:
-          name: archive-url
+          pattern: archive-url-*
           path: .
+          merge-multiple: true
 
       - name: Get archive URL variable
         id: get_url
