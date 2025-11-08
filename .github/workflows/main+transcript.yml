@@ -12,6 +12,10 @@ jobs:
     strategy:
       matrix:
         suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
+    outputs:
+      url_s4p4: ${{ steps.extract.outputs.url_s4p4 }}
+      url_s5p5: ${{ steps.extract.outputs.url_s5p5 }}
+      url_s6p6: ${{ steps.extract.outputs.url_s6p6 }}
 
     steps:
       - name: Download Python recorder & FFmpeg
@@ -31,6 +35,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run recorder
+        id: record
         env:
           MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
@@ -38,62 +43,35 @@ jobs:
           mkdir -p recordings
           python3 record.py ${{ matrix.suffix }}
 
-      - name: Save archive URL (with fallback)
+      - name: Extract uploaded URL
+        id: extract
         run: |
-          grep "https://archive.org/details/" <(cat recordings/* | strings) > archive_url.txt || echo "https://archive.org/details/UNKNOWN" > archive_url.txt
+          # Ambil URL Archive.org dari log Python
+          url=$(grep -o 'https://archive.org/details/[^ ]*' record.py.log | tail -n 1 || echo "https://archive.org/details/UNKNOWN")
+          
+          echo "[+] Archive URL ditemukan: ${url}"
 
-      # Buat nama artifact aman dari spasi
-      - name: Prepare safe artifact name
-        id: sanitize
-        run: |
-          safe_name=$(echo "${{ matrix.suffix }}" | tr ' ' '_')
-          echo "safe_name=$safe_name" >> $GITHUB_ENV
-
-      # Upload archive URL (retry 3x)
-      - name: Upload archive URL
-        run: |
-          for i in {1..3}; do
-            echo "[ Attempt $i ] Uploading archive URL..."
-            gh run upload-artifact "archive-url-${{ env.safe_name }}" archive_url.txt && break || sleep 3
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload recording artifact (retry 3x)
-      - name: Upload recording artifact
-        run: |
-          for i in {1..3}; do
-            echo "[ Attempt $i ] Uploading recordings..."
-            gh run upload-artifact "vot-recording-${{ env.safe_name }}" recordings/ && break || sleep 3
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          # Mapkan URL sesuai suffix agar bisa diakses lintas job
+          if [[ "${{ matrix.suffix }}" == "-s 4 -p 4" ]]; then
+            echo "url_s4p4=${url}" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 5 -p 5" ]]; then
+            echo "url_s5p5=${url}" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 6 -p 6" ]]; then
+            echo "url_s6p6=${url}" >> $GITHUB_OUTPUT
+          fi
 
   transcribe:
     name: 🧠 Transcribe and Push to Archive
-    runs-on: ubuntu-latest
     needs: record
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pair:
+          - { suffix: "s4p4", url: "${{ needs.record.outputs.url_s4p4 }}" }
+          - { suffix: "s5p5", url: "${{ needs.record.outputs.url_s5p5 }}" }
+          - { suffix: "s6p6", url: "${{ needs.record.outputs.url_s6p6 }}" }
 
     steps:
-      - name: Download all recording artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: vot-recording-*
-          path: recordings/
-          merge-multiple: true
-
-      - name: Download all archive URL artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: archive-url-*
-          path: .
-          merge-multiple: true
-
-      - name: Get archive URL variable
-        id: get_url
-        run: echo "archive_url=$(cat archive_url.txt)" >> $GITHUB_ENV
-
       - name: Clone Whisper-CPP (tanpa dotfiles)
         run: |
           git clone https://github.com/Sparkplugx1904/Whisper-CPP.git temp_whisper
@@ -103,39 +81,37 @@ jobs:
           cd ..
           rm -rf temp_whisper
 
-      - name: Setup FFmpeg (retry up to 3x)
+      - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
-        continue-on-error: true
-
-      - name: Setup FFmpeg (retry 2)
-        if: ${{ failure() }}
+      - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
-        continue-on-error: true
-
-      - name: Setup FFmpeg (retry 3)
-        if: ${{ failure() }}
+      - name: Setup FFmpeg
         uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: Install dependencies
         run: pip install requests pydub internetarchive
 
+      - name: Download audio file
+        run: |
+          echo "[ INFO ] Mengunduh audio dari ${{ matrix.pair.url }}"
+          curl -L -o "audio_${{ matrix.pair.suffix }}.mp3" "${{ matrix.pair.url }}"
+
       - name: Transcribe audio
         run: |
-          audio_file=$(ls recordings/*.mp3 | head -n 1)
-          echo "[ INFO ] Transcribing $audio_file..."
-          python3 -u transcriptor_cpp.py "$audio_file" medium
+          echo "[ INFO ] Transcribing audio_${{ matrix.pair.suffix }}.mp3..."
+          python3 -u transcriptor_cpp.py "audio_${{ matrix.pair.suffix }}.mp3" medium
 
       - name: Upload transcript artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vot-transcript
+          name: vot-transcript-${{ matrix.pair.suffix }}
           path: transcripts/
 
       - name: Push transcript to Archive.org
         env:
           MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
-          ARCHIVE_URL: ${{ env.archive_url }}
+          ARCHIVE_URL: ${{ matrix.pair.url }}
         run: |
           item_id=$(basename "$ARCHIVE_URL")
           echo "[ INFO ] Uploading transcript to $ARCHIVE_URL..."
