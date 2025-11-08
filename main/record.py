@@ -94,6 +94,7 @@ def run_ffmpeg(url, suffix="", position=0):
             "./ffmpeg",
             "-y",
             "-hide_banner",
+             "-t", "120",
             "-reconnect", "1",
             "-reconnect_at_eof", "1",
             "-reconnect_streamed", "1",
@@ -108,6 +109,13 @@ def run_ffmpeg(url, suffix="", position=0):
             "-metadata", f"date={date_str}",
             filename
         ]
+        proc = subprocess.Popen(cmd)
+        try:
+            proc.wait(timeout=120)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            print("[ STOP ] Recording dihentikan otomatis setelah 120 detik.")
+
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Mulai rekaman ke {filename}")
         return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
 
@@ -131,14 +139,14 @@ def run_ffmpeg(url, suffix="", position=0):
     while True:
         now = now_wita()
 
-        if now.hour == 18 and now.minute >= 30:
-            print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
-            process.send_signal(signal.SIGINT)
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-            break
+        # if now.hour == 18 and now.minute >= 30:
+        #     print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ CUT-OFF ] Sudah 18.30 WITA, hentikan ffmpeg...")
+        #     process.send_signal(signal.SIGINT)
+        #     try:
+        #         process.wait(timeout=10)
+        #     except subprocess.TimeoutExpired:
+        #         process.kill()
+        #     break
 
         if process.poll() is not None:
             print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ LOST ] ffmpeg berhenti, menunggu auto-reconnect max 10 menit...")
@@ -196,7 +204,7 @@ def main_recording():
     parser.add_argument("-p", "--position", type=int, default=0, help="Position to determine delay before upload (delay = position * 10 seconds)")
     args = parser.parse_args()
 
-    stream_url = "http://i.klikhost.com:8502/stream"
+    stream_url = "https://filesamples.com/samples/audio/mp3/sample1.mp3"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, args.suffix, args.position)
     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Semua tugas selesai.")
@@ -208,10 +216,10 @@ if __name__ == "__main__":
     while True:
         now = now_wita()
 
-        # Jika sudah jam 18:30 WITA atau lebih, hentikan program
-        if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
-            print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
-            break
+        # # Jika sudah jam 18:30 WITA atau lebih, hentikan program
+        # if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
+        #     print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+        #     break
 
         # Jalankan recording
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Memulai recording pada jam {now.strftime('%H:%M')} WITA")
@@ -221,13 +229,13 @@ if __name__ == "__main__":
             print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ERROR ] Terjadi error: {e}")
 
         # Cek waktu lagi setelah recording selesai
-        now = now_wita()
-        if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
-            print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
-            break
-        else:
-            print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
-            print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ INFO ] Menunggu 0 detik sebelum restart...")
-            continue
+        # now = now_wita()
+        # if (now.hour > 18) or (now.hour == 18 and now.minute >= 30):
+        #     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ STOP ] Setelah recording selesai, sudah jam {now.strftime('%H:%M')} WITA (>= 18:30), menghentikan program.")
+        #     break
+        # else:
+        #     print(f"\n\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RESTART ] Recording selesai sebelum 18:30 WITA, akan restart program...")
+        #     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ INFO ] Menunggu 0 detik sebelum restart...")
+        #     continue
 
     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ END ] Program selesai.")
