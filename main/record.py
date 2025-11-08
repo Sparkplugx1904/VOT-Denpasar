@@ -105,7 +105,7 @@ def run_ffmpeg(url, suffix="", position=0):
             "-c", "copy",
             "-metadata", f"title=VOT Denpasar {date_str}",
             "-metadata", "artist=VOT Radio Denpasar",
-            "-metadata", f"date={date_str}",
+            "-metadata", f"date={date_str}", "-t 120",
             filename
         ]
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ RUN ] Mulai rekaman ke {filename}")
