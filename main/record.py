@@ -196,7 +196,7 @@ def main_recording():
     parser.add_argument("-p", "--position", type=int, default=0, help="Position to determine delay before upload (delay = position * 10 seconds)")
     args = parser.parse_args()
 
-    stream_url = "https://podnews.net/audio/1411.wav"
+    stream_url = "https://podnews.net/audio/s-192-44100.mp3"
     wait_for_stream(stream_url)
     run_ffmpeg(stream_url, args.suffix, args.position)
     print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Semua tugas selesai.")
