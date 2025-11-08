@@ -111,7 +111,7 @@ def run_ffmpeg(url, suffix="", position=0):
         ]
         proc = subprocess.Popen(cmd)
         try:
-            proc.wait(timeout=120)
+            proc.wait(timeout=61)
         except subprocess.TimeoutExpired:
             proc.terminate()
             print("[ STOP ] Recording dihentikan otomatis setelah 120 detik.")
