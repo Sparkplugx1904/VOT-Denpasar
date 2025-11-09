@@ -48,8 +48,11 @@ jobs:
         run: |
           # Ambil URL Archive.org dari log Python
           url=$(grep -o 'https://archive.org/details/[^ ]*' record.py.log | tail -n 1 || echo "https://archive.org/details/UNKNOWN")
-          
-          echo "[+] Archive URL ditemukan: ${url}"
+
+          # Ubah "details" menjadi "download" agar URL langsung menunjuk ke file audio
+          url="${url/details/download}"
+
+          echo "[+] Archive URL ditemukan (download): ${url}"
 
           # Mapkan URL sesuai suffix agar bisa diakses lintas job
           if [[ "${{ matrix.suffix }}" == "-s 4 -p 4" ]]; then
