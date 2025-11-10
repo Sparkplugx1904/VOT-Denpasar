@@ -188,6 +188,18 @@ def upload_to_archive(file_path):
     except Exception as e:
         print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ERROR ] Upload gagal: {e}")
         return None
+        
+def write_archive_url(url):
+    """Menulis URL hasil upload ke file log agar bisa diambil oleh runner"""
+    log_file = "record.py.log"
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            if url:
+                f.write(f"[{now_wita().strftime('%H:%M:%S')}] [ ARCHIVE URL ] {url}\n")
+            else:
+                f.write(f"[{now_wita().strftime('%H:%M:%S')}] [ ARCHIVE URL ] None\n")
+    except Exception as e:
+        print(f"\033[34m[{now_wita().strftime('%H:%M:%S')}]\033[0m [ ERROR ] Gagal menulis log: {e}")
 
 def main_recording():
     """Main recording function that can be restarted"""
