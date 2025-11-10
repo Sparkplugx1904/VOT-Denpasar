@@ -63,6 +63,8 @@ jobs:
             echo "url_s6p6=${url}" >> $GITHUB_OUTPUT
           fi
 
+          sleep 300
+
   transcribe:
     name: 🧠 Transcribe and Push to Archive
     needs: record
