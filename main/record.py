@@ -169,25 +169,43 @@ def run_ffmpeg(url, suffix="", position=0):
         write_archive_url(None)
 
 def upload_to_archive(file_path):
-    print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ UPLOAD ] Mulai upload {file_path} ke archive.org...")
+    """Upload file ke archive.org dan hasilkan URL langsung (download)"""
+    print(f"\033[34m[{now_wita().strftime('%H:%M:%S')}]\033[0m [ UPLOAD ] Mulai upload {file_path} ke archive.org...")
     try:
+        # Buat identifier unik
         item_identifier = f"vot-denpasar-{now_wita().strftime('%Y%m%d-%H%M%S')}"
-        upload(item_identifier,
-               files=[file_path],
-               metadata={
-                   'mediatype': 'audio',
-                   'title': os.path.basename(file_path),
-                   'creator': 'VOT Radio Denpasar'
-               },
-               access_key=MY_ACCESS_KEY,
-               secret_key=MY_SECRET_KEY,
-               verbose=True)
-        archive_url = f"https://archive.org/details/{item_identifier}"
-        print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ DONE ] Upload berhasil: {archive_url}")
-        return archive_url
+        filename = os.path.basename(file_path)
+
+        # Upload ke archive.org
+        upload(
+            item_identifier,
+            files=[file_path],
+            metadata={
+                'mediatype': 'audio',
+                'title': filename,
+                'creator': 'VOT Radio Denpasar'
+            },
+            access_key=MY_ACCESS_KEY,
+            secret_key=MY_SECRET_KEY,
+            verbose=True
+        )
+
+        # URL halaman detail
+        details_url = f"https://archive.org/details/{item_identifier}"
+
+        # URL download langsung (dengan nama file)
+        download_url = f"https://archive.org/download/{item_identifier}/{filename}"
+
+        # Tampilkan hasil sukses
+        print(f"\033[34m[{now_wita().strftime('%H:%M:%S')}]\033[0m [ DONE ] Upload berhasil: {details_url}")
+        print(f"\033[34m[{now_wita().strftime('%H:%M:%S')}]\033[0m [ LINK ] URL langsung: {download_url}")
+
+        return download_url  # <── Return URL langsung ke file
+
     except Exception as e:
-        print(f"\033[34m[{datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime('%H:%M:%S')}]\033[0m [ ERROR ] Upload gagal: {e}")
+        print(f"\033[34m[{now_wita().strftime('%H:%M:%S')}]\033[0m [ ERROR ] Upload gagal: {e}")
         return None
+
         
 def write_archive_url(url):
     """Menulis URL hasil upload ke file log agar bisa diambil oleh runner"""

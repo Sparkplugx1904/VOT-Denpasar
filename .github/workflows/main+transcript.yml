@@ -48,10 +48,7 @@ jobs:
         id: extract
         run: |
           # Ambil URL Archive.org dari log Python
-          url=$(grep -o 'https://archive.org/details/[^ ]*' record.py.log | tail -n 1 || echo "https://archive.org/details/UNKNOWN")
-
-          # Ubah "details" menjadi "download" agar URL langsung menunjuk ke file audio
-          url="${url/details/download}"
+          url=$(grep -o 'https://archive.org/download/[^ ]*/[^ ]*' record.py.log | tail -n 1 || echo "https://archive.org/download/UNKNOWN/UNKNOWN.mp3")
 
           echo "[+] Archive URL ditemukan (download): ${url}"
 
@@ -119,9 +116,34 @@ jobs:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
           ARCHIVE_URL: ${{ matrix.pair.url }}
         run: |
-          item_id=$(basename "$ARCHIVE_URL")
-          echo "[ INFO ] Uploading transcript to $ARCHIVE_URL..."
-          ia upload "$item_id" transcripts/ --retries 3 \
+          set -euo pipefail
+
+          echo "[ INFO ] Raw ARCHIVE_URL: $ARCHIVE_URL"
+
+          # --- Parser: ubah download URL jadi details URL + ambil item_id ---
+          if echo "$ARCHIVE_URL" | grep -q "/download/"; then
+            item_id=$(echo "$ARCHIVE_URL" | sed -E 's#.*/download/([^/]+)/.*#\1#')
+          elif echo "$ARCHIVE_URL" | grep -q "/details/"; then
+            item_id=$(echo "$ARCHIVE_URL" | sed -E 's#.*/details/([^/]+)/?.*#\1#')
+          else
+            item_id=$(basename "$ARCHIVE_URL")
+          fi
+
+          DETAILS_ARCHIVE_URL="https://archive.org/details/${item_id}/"
+          echo "[ INFO ] Parsed item_id: ${item_id}"
+          echo "[ INFO ] DETAILS_ARCHIVE_URL: ${DETAILS_ARCHIVE_URL}"
+
+          # Validasi folder transcripts
+          if [ ! -d "transcripts" ]; then
+            echo "[ ERROR ] Folder 'transcripts/' tidak ditemukan!"
+            exit 1
+          fi
+
+          echo "[ INFO ] Uploading transcripts to Archive.org item: ${item_id}"
+          ia upload "${item_id}" transcripts/ --retries 3 \
             --metadata="subject:Transcription" \
             --metadata="description:Auto transcription added by GitHub Actions" \
             --access-key "$MY_ACCESS_KEY" --secret-key "$MY_SECRET_KEY"
+
+          echo "[ DONE ] Upload transcripts complete!"
+          echo "[ LINK ] Detail page: ${DETAILS_ARCHIVE_URL}"
