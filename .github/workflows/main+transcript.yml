@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
+        suffix: ["-s 4 -p 4"]
+        # suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
     outputs:
       url_s4p4: ${{ steps.extract.outputs.url_s4p4 }}
       # url_s5p5: ${{ steps.extract.outputs.url_s5p5 }}
