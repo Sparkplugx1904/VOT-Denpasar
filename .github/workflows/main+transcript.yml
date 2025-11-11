@@ -14,8 +14,8 @@ jobs:
         suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
     outputs:
       url_s4p4: ${{ steps.extract.outputs.url_s4p4 }}
-      url_s5p5: ${{ steps.extract.outputs.url_s5p5 }}
-      url_s6p6: ${{ steps.extract.outputs.url_s6p6 }}
+      # url_s5p5: ${{ steps.extract.outputs.url_s5p5 }}
+      # url_s6p6: ${{ steps.extract.outputs.url_s6p6 }}
 
     steps:
       - name: Download Python recorder & FFmpeg
@@ -73,8 +73,8 @@ jobs:
       matrix:
         pair:
           - { suffix: "s4p4", url: "${{ needs.record.outputs.url_s4p4 }}" }
-          - { suffix: "s5p5", url: "${{ needs.record.outputs.url_s5p5 }}" }
-          - { suffix: "s6p6", url: "${{ needs.record.outputs.url_s6p6 }}" }
+          # - { suffix: "s5p5", url: "${{ needs.record.outputs.url_s5p5 }}" }
+          # - { suffix: "s6p6", url: "${{ needs.record.outputs.url_s6p6 }}" }
 
     steps:
       - name: Clone Whisper-CPP (tanpa dotfiles)
