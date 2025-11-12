@@ -44,7 +44,7 @@ jobs:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
         run: |
           mkdir -p recordings
-          python3 record.py ${{ matrix.suffix }}
+          python3 -u record.py ${{ matrix.suffix }}
 
       - name: Map environment vars to matrix outputs
         id: map

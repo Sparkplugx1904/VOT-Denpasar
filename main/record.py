@@ -23,7 +23,7 @@ MY_SECRET_KEY = os.environ.get("MY_SECRET_KEY")
 def log(msg):
     """Tambahkan timestamp biru ke setiap log tanpa ubah isi pesan"""
     ts = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%H:%M:%S")
-    print(f"\033[34m[{ts}]\033[0m {msg}")
+    print(f"\033[34m[{ts}]\033[0m {msg}", flush=True)
 
 if not MY_ACCESS_KEY or not MY_SECRET_KEY:
     log("[ ERROR ] GitHub secrets MY_ACCESS_KEY atau MY_SECRET_KEY belum diset!")
@@ -93,7 +93,7 @@ def run_ffmpeg(url, suffix="", position=0):
     def log_ffmpeg(proc):
         for line in proc.stderr:
             now = datetime.datetime.now(WITA_TZ).strftime("%H:%M:%S")
-            sys.stdout.write(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ")
+            sys.stdout.write(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ", flush=True)
             sys.stdout.flush()
         print()
 
