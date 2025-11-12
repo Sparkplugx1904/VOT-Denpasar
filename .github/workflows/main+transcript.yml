@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["-s 4 -p 4"]
-        # suffix: ["-s 4 -p 4", "-s 5 -p 5", "-s 6 -p 6"]
+        suffix: ["-s 0 -p 0", "-s 1 -p 1", "-s 2 -p 2"]
     outputs:
-      url_s4p4: ${{ steps.extract.outputs.url_s4p4 }}
-      # url_s5p5: ${{ steps.extract.outputs.url_s5p5 }}
-      # url_s6p6: ${{ steps.extract.outputs.url_s6p6 }}
+      url_s0p0: ${{ steps.map.outputs.url_s0p0 }}
+      id_s0p0:  ${{ steps.map.outputs.id_s0p0 }}
+      url_s1p1: ${{ steps.map.outputs.url_s1p1 }}
+      id_s1p1:  ${{ steps.map.outputs.id_s1p1 }}
+      url_s2p2: ${{ steps.map.outputs.url_s2p2 }}
+      id_s2p2:  ${{ steps.map.outputs.id_s2p2 }}
 
     steps:
       - name: Download Python recorder & FFmpeg
@@ -35,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run recorder
+      - name: Run recorder (auto-export ENV)
         id: record
         env:
           MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
@@ -44,23 +46,35 @@ jobs:
           mkdir -p recordings
           python3 record.py ${{ matrix.suffix }}
 
-      - name: Extract uploaded URL
-        id: extract
+      - name: Map environment vars to matrix outputs
+        id: map
         run: |
-          # Ambil URL Archive.org dari log Python
-          url=$(grep -o 'https://archive.org/download/[^ ]*/[^ ]*' record.py.log | tail -n 1 || echo "https://archive.org/download/UNKNOWN/UNKNOWN.mp3")
+          echo "[ INFO ] Global env values:"
+          echo "  ARCHIVE_URL: $ARCHIVE_URL"
+          echo "  ITEM_ID: $ITEM_ID"
 
-          echo "[+] Archive URL ditemukan (download): ${url}"
-
-          # Mapkan URL sesuai suffix agar bisa diakses lintas job
-          if [[ "${{ matrix.suffix }}" == "-s 4 -p 4" ]]; then
-            echo "url_s4p4=${url}" >> $GITHUB_OUTPUT
-          elif [[ "${{ matrix.suffix }}" == "-s 5 -p 5" ]]; then
-            echo "url_s5p5=${url}" >> $GITHUB_OUTPUT
-          elif [[ "${{ matrix.suffix }}" == "-s 6 -p 6" ]]; then
-            echo "url_s6p6=${url}" >> $GITHUB_OUTPUT
+          if [[ -z "$ARCHIVE_URL" || -z "$ITEM_ID" ]]; then
+            echo "[ ERROR ] Environment variables missing!"
+            exit 1
           fi
 
+          # Map ke matrix untuk lintas-job
+          if [[ "${{ matrix.suffix }}" == "-s 0 -p 0" ]]; then
+            echo "url_s0p0=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s0p0=$ITEM_ID" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 1 -p 1" ]]; then
+            echo "url_s1p1=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s1p1=$ITEM_ID" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 2 -p 2" ]]; then
+            echo "url_s2p2=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s2p2=$ITEM_ID" >> $GITHUB_OUTPUT
+          fi
+
+          echo "[ OK ] Environment successfully mapped to job outputs."
+
+      - name: Waiting...
+        run: |
+          # Tunggu sebentar agar upload benar-benar tersinkron di archive.org
           sleep 300
 
   transcribe:
@@ -70,9 +84,9 @@ jobs:
     strategy:
       matrix:
         pair:
-          - { suffix: "s4p4", url: "${{ needs.record.outputs.url_s4p4 }}" }
-          # - { suffix: "s5p5", url: "${{ needs.record.outputs.url_s5p5 }}" }
-          # - { suffix: "s6p6", url: "${{ needs.record.outputs.url_s6p6 }}" }
+          - { suffix: "s0p0", url: "${{ needs.record.outputs.url_s0p0 }}", item: "${{ needs.record.outputs.id_s0p0 }}" }
+          - { suffix: "s1p1", url: "${{ needs.record.outputs.url_s1p1 }}", item: "${{ needs.record.outputs.id_s1p1 }}" }
+          - { suffix: "s2p2", url: "${{ needs.record.outputs.url_s2p2 }}", item: "${{ needs.record.outputs.id_s2p2 }}" }
 
     steps:
       - name: Clone Whisper-CPP (tanpa dotfiles)
@@ -85,11 +99,12 @@ jobs:
           rm -rf temp_whisper
 
       - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
+        uses: FedericoCarboni/setup-ffmpeg@v3      
       - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
+        uses: FedericoCarboni/setup-ffmpeg@v3      
       - name: Setup FFmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3
+        uses: FedericoCarboni/setup-ffmpeg@v3      
+
 
       - name: Install dependencies
         run: pip install requests pydub internetarchive
@@ -114,33 +129,20 @@ jobs:
         env:
           MY_ACCESS_KEY: ${{ secrets.MY_ACCESS_KEY }}
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
-          ARCHIVE_URL: ${{ matrix.pair.url }}
+          ITEM_ID: ${{ matrix.pair.item }}
         run: |
           set -euo pipefail
 
-          echo "[ INFO ] Raw ARCHIVE_URL: $ARCHIVE_URL"
+          echo "[ INFO ] Upload transcript ke Archive.org item: $ITEM_ID"
+          DETAILS_ARCHIVE_URL="https://archive.org/details/${ITEM_ID}/"
+          echo "[ INFO ] DETAIL PAGE: ${DETAILS_ARCHIVE_URL}"
 
-          # --- Parser: ubah download URL jadi details URL + ambil item_id ---
-          if echo "$ARCHIVE_URL" | grep -q "/download/"; then
-            item_id=$(echo "$ARCHIVE_URL" | sed -E 's#.*/download/([^/]+)/.*#\1#')
-          elif echo "$ARCHIVE_URL" | grep -q "/details/"; then
-            item_id=$(echo "$ARCHIVE_URL" | sed -E 's#.*/details/([^/]+)/?.*#\1#')
-          else
-            item_id=$(basename "$ARCHIVE_URL")
-          fi
-
-          DETAILS_ARCHIVE_URL="https://archive.org/details/${item_id}/"
-          echo "[ INFO ] Parsed item_id: ${item_id}"
-          echo "[ INFO ] DETAILS_ARCHIVE_URL: ${DETAILS_ARCHIVE_URL}"
-
-          # Validasi folder transcripts
           if [ ! -d "transcripts" ]; then
             echo "[ ERROR ] Folder 'transcripts/' tidak ditemukan!"
             exit 1
           fi
 
-          echo "[ INFO ] Uploading transcripts to Archive.org item: ${item_id}"
-          ia upload "${item_id}" transcripts/ --retries 3 \
+          ia upload "${ITEM_ID}" transcripts/ --retries 3 \
             --metadata="subject:Transcription" \
             --metadata="description:Auto transcription added by GitHub Actions" \
             --access-key "$MY_ACCESS_KEY" --secret-key "$MY_SECRET_KEY"
