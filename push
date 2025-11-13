@@ -1,3 +1,32 @@
-    git add .
-    git commit -m "Speech to Text Major Update"
-    git push
+#!/bin/bash
+# push.sh
+# Usage: ./push.sh -m "Commit message"
+
+set -euo pipefail
+
+# Default commit message
+MESSAGE="Auto commit"
+
+# Parse -m argument
+while getopts "m:" opt; do
+  case $opt in
+    m)
+      MESSAGE="$OPTARG"
+      ;;
+    *)
+      echo "Usage: $0 -m \"commit message\""
+      exit 1
+      ;;
+  esac
+done
+
+echo "[ INFO ] Adding all changes..."
+git add .
+
+echo "[ INFO ] Committing changes with message: $MESSAGE"
+git commit -m "$MESSAGE"
+
+echo "[ INFO ] Pushing to remote..."
+git push
+
+echo "[ DONE ] Git push complete!"

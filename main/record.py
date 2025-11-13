@@ -93,10 +93,8 @@ def run_ffmpeg(url, suffix="", position=0):
     def log_ffmpeg(proc):
         for line in proc.stderr:
             now = datetime.datetime.now(WITA_TZ).strftime("%H:%M:%S")
-            sys.stdout.write(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ")
-            sys.stdout.flush()
+            print(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ", end="", flush=True)
         print()
-
 
     threading.Thread(target=log_ffmpeg, args=(process,), daemon=True).start()
 
@@ -136,39 +134,44 @@ def run_ffmpeg(url, suffix="", position=0):
         write_env_variables("None", "None")
 
 
-def upload_to_archive(file_path):
-    """Upload file ke archive.org dan hasilkan URL langsung + item_id"""
+def upload_to_archive(file_path, retries=5):
+    """Upload file ke archive.org dan hasilkan URL langsung + item_id, retry jika gagal"""
     log(f"[ UPLOAD ] Mulai upload {file_path} ke archive.org...")
-    try:
-        # Buat identifier unik
-        item_identifier = f"vot-denpasar-{now_wita().strftime('%Y%m%d-%H%M%S')}"
-        filename = os.path.basename(file_path)
+    item_identifier = f"vot-denpasar-{now_wita().strftime('%Y%m%d-%H%M%S')}"
+    filename = os.path.basename(file_path)
 
-        upload(
-            item_identifier,
-            files=[file_path],
-            metadata={
-                'mediatype': 'audio',
-                'title': filename,
-                'creator': 'VOT Radio Denpasar'
-            },
-            access_key=MY_ACCESS_KEY,
-            secret_key=MY_SECRET_KEY,
-            verbose=True
-        )
+    for attempt in range(1, retries + 1):
+        try:
+            upload(
+                item_identifier,
+                files=[file_path],
+                metadata={
+                    'mediatype': 'audio',
+                    'title': filename,
+                    'creator': 'VOT Radio Denpasar'
+                },
+                access_key=MY_ACCESS_KEY,
+                secret_key=MY_SECRET_KEY,
+                verbose=True
+            )
 
-        details_url = f"https://archive.org/details/{item_identifier}"
-        download_url = f"https://archive.org/download/{item_identifier}/{filename}"
+            details_url = f"https://archive.org/details/{item_identifier}"
+            download_url = f"https://archive.org/download/{item_identifier}/{filename}"
 
-        log(f"[ DONE ] Upload berhasil: {details_url}")
-        log(f"[ LINK ] URL langsung: {download_url}")
-        log(f"[ ITEM ] ID: {item_identifier}")
+            log(f"[ DONE ] Upload berhasil: {details_url}")
+            log(f"[ LINK ] URL langsung: {download_url}")
+            log(f"[ ITEM ] ID: {item_identifier}")
 
-        return download_url, item_identifier
+            return download_url, item_identifier
 
-    except Exception as e:
-        log(f"[ ERROR ] Upload gagal: {e}")
-        return None, None
+        except Exception as e:
+            log(f"[ WARN ] Upload gagal percobaan {attempt}: {e}")
+            if attempt < retries:
+                log("[ RETRY ] Menunggu 10 detik sebelum mencoba lagi...")
+                time.sleep(10)
+            else:
+                log("[ ERROR ] Semua percobaan upload gagal.")
+                return None, None
 
 
 def write_env_variables(url, item_id):

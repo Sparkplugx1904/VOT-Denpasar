@@ -12,14 +12,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suffix: ["-s 0 -p 0", "-s 1 -p 1", "-s 2 -p 2"]
+        suffix: ["-s 3 -p 3", "-s 4 -p 4", "-s 5 -p 5"]
     outputs:
-      url_s0p0: ${{ steps.map.outputs.url_s0p0 }}
-      id_s0p0:  ${{ steps.map.outputs.id_s0p0 }}
-      url_s1p1: ${{ steps.map.outputs.url_s1p1 }}
-      id_s1p1:  ${{ steps.map.outputs.id_s1p1 }}
-      url_s2p2: ${{ steps.map.outputs.url_s2p2 }}
-      id_s2p2:  ${{ steps.map.outputs.id_s2p2 }}
+      url_s3p3: ${{ steps.map.outputs.url_s3p3 }}
+      id_s3p3:  ${{ steps.map.outputs.id_s3p3 }}
+      url_s4p4: ${{ steps.map.outputs.url_s4p4 }}
+      id_s4p4:  ${{ steps.map.outputs.id_s4p4 }}
+      url_s5p5: ${{ steps.map.outputs.url_s5p5 }}
+      id_s5p5:  ${{ steps.map.outputs.id_s5p5 }}
 
     steps:
       - name: Download Python recorder & FFmpeg
@@ -60,15 +60,15 @@ jobs:
           fi
 
           # Map ke matrix untuk lintas-job
-          if [[ "${{ matrix.suffix }}" == "-s 0 -p 0" ]]; then
-            echo "url_s0p0=$ARCHIVE_URL" >> $GITHUB_OUTPUT
-            echo "id_s0p0=$ITEM_ID" >> $GITHUB_OUTPUT
-          elif [[ "${{ matrix.suffix }}" == "-s 1 -p 1" ]]; then
-            echo "url_s1p1=$ARCHIVE_URL" >> $GITHUB_OUTPUT
-            echo "id_s1p1=$ITEM_ID" >> $GITHUB_OUTPUT
-          elif [[ "${{ matrix.suffix }}" == "-s 2 -p 2" ]]; then
-            echo "url_s2p2=$ARCHIVE_URL" >> $GITHUB_OUTPUT
-            echo "id_s2p2=$ITEM_ID" >> $GITHUB_OUTPUT
+          if [[ "${{ matrix.suffix }}" == "-s 3 -p 3" ]]; then
+            echo "url_s3p3=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s3p3=$ITEM_ID" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 4 -p 4" ]]; then
+            echo "url_s4p4=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s4p4=$ITEM_ID" >> $GITHUB_OUTPUT
+          elif [[ "${{ matrix.suffix }}" == "-s 5 -p 5" ]]; then
+            echo "url_s5p5=$ARCHIVE_URL" >> $GITHUB_OUTPUT
+            echo "id_s5p5=$ITEM_ID" >> $GITHUB_OUTPUT
           fi
 
           echo "[ OK ] Environment successfully mapped to job outputs."
@@ -83,11 +83,12 @@ jobs:
     needs: record
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         pair:
-          - { suffix: "s0p0", url: "${{ needs.record.outputs.url_s0p0 }}", item: "${{ needs.record.outputs.id_s0p0 }}" }
-          - { suffix: "s1p1", url: "${{ needs.record.outputs.url_s1p1 }}", item: "${{ needs.record.outputs.id_s1p1 }}" }
-          - { suffix: "s2p2", url: "${{ needs.record.outputs.url_s2p2 }}", item: "${{ needs.record.outputs.id_s2p2 }}" }
+          - { suffix: "s3p3", url: "${{ needs.record.outputs.url_s3p3 }}", item: "${{ needs.record.outputs.id_s3p3 }}" }
+          - { suffix: "s4p4", url: "${{ needs.record.outputs.url_s4p4 }}", item: "${{ needs.record.outputs.id_s4p4 }}" }
+          - { suffix: "s5p5", url: "${{ needs.record.outputs.url_s5p5 }}", item: "${{ needs.record.outputs.id_s5p5 }}" }
 
     steps:
       - name: Clone Whisper-CPP (tanpa dotfiles)
@@ -134,21 +135,4 @@ jobs:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
           ITEM_ID: ${{ matrix.pair.item }}
         run: |
-          set -euo pipefail
-
-          echo "[ INFO ] Upload transcript ke Archive.org item: $ITEM_ID"
-          DETAILS_ARCHIVE_URL="https://archive.org/details/${ITEM_ID}/"
-          echo "[ INFO ] DETAIL PAGE: ${DETAILS_ARCHIVE_URL}"
-
-          if [ ! -d "transcripts" ]; then
-            echo "[ ERROR ] Folder 'transcripts/' tidak ditemukan!"
-            exit 1
-          fi
-
-          ia upload "${ITEM_ID}" transcripts/ --retries 3 \
-            --metadata="subject:Transcription" \
-            --metadata="description:Auto transcription added by GitHub Actions" \
-            --access-key "$MY_ACCESS_KEY" --secret-key "$MY_SECRET_KEY"
-
-          echo "[ DONE ] Upload transcripts complete!"
-          echo "[ LINK ] Detail page: ${DETAILS_ARCHIVE_URL}"
+          python3 -u ia.py
