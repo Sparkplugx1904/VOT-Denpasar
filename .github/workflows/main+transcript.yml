@@ -108,8 +108,10 @@ jobs:
 
 
       - name: Install dependencies
-        run: pip install requests pydub internetarchive
-
+        run: |
+          pip install requests pydub internetarchive
+          sudo apt install -y internetarchive
+          
       - name: Download audio file
         run: |
           echo "[ INFO ] Mengunduh audio dari ${{ matrix.pair.url }}"
