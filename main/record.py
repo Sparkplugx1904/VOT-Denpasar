@@ -93,9 +93,10 @@ def run_ffmpeg(url, suffix="", position=0):
     def log_ffmpeg(proc):
         for line in proc.stderr:
             now = datetime.datetime.now(WITA_TZ).strftime("%H:%M:%S")
-            sys.stdout.write(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ", flush=True)
+            sys.stdout.write(f"\r\033[34m[{now}]\033[0m [FFMPEG] {line.strip()}   ")
             sys.stdout.flush()
         print()
+
 
     threading.Thread(target=log_ffmpeg, args=(process,), daemon=True).start()
 
