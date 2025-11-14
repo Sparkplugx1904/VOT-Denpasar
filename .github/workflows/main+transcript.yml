@@ -112,16 +112,11 @@ jobs:
         run: |
           pip install requests pydub internetarchive
           sudo apt install -y internetarchive
-          
-      - name: Download audio file
-        run: |
-          echo "[ INFO ] Mengunduh audio dari ${{ matrix.pair.url }}"
-          curl -L -o "audio_${{ matrix.pair.suffix }}.mp3" "${{ matrix.pair.url }}"
 
       - name: Transcribe audio
         run: |
           echo "[ INFO ] Transcribing audio_${{ matrix.pair.suffix }}.mp3..."
-          python3 -u transcriptor_cpp.py "audio_${{ matrix.pair.suffix }}.mp3" medium
+          python3 -u transcriptor_cpp.py "${{ matrix.pair.url }}" medium
 
       - name: Upload transcript artifact
         uses: actions/upload-artifact@v4
