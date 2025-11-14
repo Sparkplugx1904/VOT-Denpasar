@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Download Python recorder & FFmpeg
         run: |
-          curl -L -o record.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/record.py
+          curl -L -o record2.py https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/main/record2.py
           curl -L -o ffmpeg https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffmpeg
           curl -L -o ffprobe https://github.com/Sparkplugx1904/voiceoftrisma/raw/refs/heads/main/bin/ffprobe
           curl -L -o requirements.txt https://raw.githubusercontent.com/Sparkplugx1904/voiceoftrisma/main/requirements.txt
@@ -45,7 +45,7 @@ jobs:
           MY_SECRET_KEY: ${{ secrets.MY_SECRET_KEY }}
         run: |
           mkdir -p recordings
-          python3 -u record.py ${{ matrix.suffix }}
+          python3 -u record2.py ${{ matrix.suffix }}
 
       - name: Map environment vars to matrix outputs
         id: map
